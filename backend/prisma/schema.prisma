@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+
+// ============================================
+// MODELO DE USUARIO
+// ============================================
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hash bcrypt de la contraseña
+  name      String?  // Nombre opcional del usuario
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relación: Un usuario puede tener muchas URLs
+  urls      Url[]
+  
+  @@map("users") // Nombre de la tabla en la base de datos
+}
+
+// ============================================
+// MODELO DE URL
+// ============================================
+model Url {
+  id          String   @id @default(uuid())
+  alias       String   @unique // Código corto único (ej: "7n4Ak")
+  longUrl     String   // URL original completa
+  customAlias Boolean  @default(false) // ¿Es un alias personalizado?
+  
+  // Relación con usuario (opcional, puede ser null para URLs anónimas)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime? // Opcional: fecha de expiración de la URL
+  
+  // Relación: Una URL puede tener muchos clicks
+  clicks      Click[]
+  
+  // Índices para optimizar búsquedas
+  @@index([userId])      // Buscar URLs por usuario
+  @@index([createdAt])   // Ordenar URLs por fecha
+  @@map("urls")
+}
+
+// ============================================
+// MODELO DE CLICK (ANALYTICS)
+// ============================================
+model Click {
+  id        String   @id @default(uuid())
+  
+  // Relación con la URL
+  urlId     String
+  url       Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
+  
+  // Datos del click
+  timestamp DateTime @default(now())
+  ipAddress String?  // IP del visitante (opcional por privacidad)
+  userAgent String?  // Navegador/dispositivo del visitante
+  referer   String?  // Desde dónde vino el visitante
+  country   String?  // País del visitante (futuro: con GeoIP)
+  
+  // Índices para analytics rápidos
+  @@index([urlId])              // Clicks por URL
+  @@index([timestamp])          // Clicks por fecha
+  @@index([urlId, timestamp])   // Combinado para queries complejas
+  @@map("clicks")
+}
