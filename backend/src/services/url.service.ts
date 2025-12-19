@@ -56,46 +56,45 @@ export class UrlService {
     }
 
     /**
-     * Obtener URL original optimizado para redirección (Con Caché Redis)
-     */
-    public static async getLongUrl(alias: string): Promise<string | null> {
-        const { redisClient } = await import('@/config/redis'); // Import dinámico para evitar ciclos si los hubiera, o directo arriba
+   * Obtener datos de URL por alias (Optimizado)
+   * Retorna { id, longUrl } para redirección y analytics
+   */
+    public static async getUrlData(alias: string): Promise<{ id: string; longUrl: string } | null> {
+        const { redisClient } = await import('@/config/redis');
         const client = redisClient.getClient();
         const cacheKey = `url:${alias}`;
 
         // 1. Intentar obtener de Redis
         try {
             if (redisClient.isReady()) {
-                const cachedUrl = await client.get(cacheKey);
-                if (cachedUrl) {
-                    return cachedUrl;
+                const cached = await client.get(cacheKey);
+                if (cached) {
+                    return JSON.parse(cached);
                 }
             }
         } catch (error) {
             console.error('⚠️ Error leyendo de Redis:', error);
-            // Continuamos a DB
         }
 
         // 2. Buscar en DB
         const url = await prisma.url.findUnique({
             where: { alias },
-            select: { longUrl: true },
+            select: { id: true, longUrl: true },
         });
 
         if (!url) {
             return null;
         }
 
-        // 3. Guardar en Redis (Fire and forget)
+        // 3. Guardar en Redis
         try {
             if (redisClient.isReady()) {
-                // Expiración: 24 horas (86400 segundos)
-                await client.set(cacheKey, url.longUrl, { EX: 86400 });
+                await client.set(cacheKey, JSON.stringify(url), { EX: 86400 });
             }
         } catch (error) {
             console.error('⚠️ Error escribiendo en Redis:', error);
         }
 
-        return url.longUrl;
+        return url;
     }
 }

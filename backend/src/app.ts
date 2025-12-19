@@ -90,11 +90,13 @@ app.use(limiter);
  */
 import { authRoutes } from '@/routes/auth.routes';
 import { urlRoutes } from '@/routes/url.routes';
+import { analyticsRoutes } from '@/routes/analytics.routes';
 
 // ... (después de los middlewares y antes de las rutas existentes)
 
 app.use('/api/auth', authRoutes);
 app.use('/api/urls', urlRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Rutas base
 app.get('/health', (_req, res) => {

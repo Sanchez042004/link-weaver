@@ -71,7 +71,10 @@ model Click {
   ipAddress String?  // IP del visitante (opcional por privacidad)
   userAgent String?  // Navegador/dispositivo del visitante
   referer   String?  // Desde dónde vino el visitante
-  country   String?  // País del visitante (futuro: con GeoIP)
+  country   String?  // País del visitante
+  browser   String?  // Chrome, Firefox, etc.
+  os        String?  // Windows, iOS, Android
+  device    String?  // desktop, mobile, tablet
   
   // Índices para analytics rápidos
   @@index([urlId])              // Clicks por URL

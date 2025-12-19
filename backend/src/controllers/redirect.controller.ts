@@ -10,14 +10,26 @@ export class RedirectController {
         const { alias } = req.params;
 
         try {
-            const longUrl = await UrlService.getLongUrl(alias);
+            const urlData = await UrlService.getUrlData(alias); // Cambiado de getLongUrl a getUrlData
 
-            if (longUrl) {
-                // Redirección 302 (Found/Temporary)
-                // Usamos 302 para permitir tracking. Si usamos 301 (Permanent),
-                // el navegador cacheará la redirección y no golpeará nuestro backend,
-                // perdiendo datos de analytics.
-                res.redirect(longUrl);
+            if (urlData) {
+                // Redirección inmediata (prioridad latencia)
+                res.redirect(urlData.longUrl);
+
+                // Tracking asíncrono (Fire and forget)
+                // No esperamos a que termine (sin await) para no retrasar la respuesta,
+                // aunque res.redirect ya envió headers.
+                // Node.js manejará esto en background.
+                const ip = req.ip || req.socket.remoteAddress || '';
+                const userAgent = req.headers['user-agent'] || '';
+                const referer = req.headers['referer'] || '';
+
+                // Import dinámico para evitar posibles ciclos circulares iniciales
+                // (aunque no debería haber aquí)
+                import('@/services/analytics.service').then(({ AnalyticsService }) => {
+                    AnalyticsService.trackClick(urlData.id, ip, userAgent, referer);
+                });
+
                 return;
             }
 
