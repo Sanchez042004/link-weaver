@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { UrlService } from '@/services/url.service';
+import { AnalyticsService } from '@/services/analytics.service';
 import { env } from '@/config/env';
+import { Logger } from '@/config/logger';
 
 export class RedirectController {
     /**
@@ -17,31 +19,23 @@ export class RedirectController {
                 res.redirect(urlData.longUrl);
 
                 // Tracking asíncrono (Fire and forget)
-                // No esperamos a que termine (sin await) para no retrasar la respuesta,
-                // aunque res.redirect ya envió headers.
-                // Node.js manejará esto en background.
+                // Usamos .catch() para manejar errores en la promesa flotante
                 const ip = req.ip || req.socket.remoteAddress || '';
                 const userAgent = req.headers['user-agent'] || '';
                 const referer = req.headers['referer'] || '';
 
-                // Import dinámico para evitar posibles ciclos circulares iniciales
-                // (aunque no debería haber aquí)
-                import('@/services/analytics.service').then(({ AnalyticsService }) => {
-                    AnalyticsService.trackClick(urlData.id, ip, userAgent, referer);
-                });
+                AnalyticsService.trackClick(urlData.id, ip, userAgent, referer)
+                    .catch(err => Logger.error('Background tracking error:', err));
 
                 return;
             }
 
             // Si no encuentra la URL
-            // Opción A: JSON 404 (para API pura)
-            // res.status(404).json({ success: false, message: 'URL no encontrada' });
-
-            // Opción B: Redirigir a página 404 del frontend (Mejor para usuarios)
+            // Redirigir a página 404 del frontend (Mejor para usuarios)
             res.redirect(`${env.FRONTEND_URL}/404?alias=${alias}`);
 
         } catch (error) {
-            console.error('Error en redirección:', error);
+            Logger.error('Error en redirección:', error);
             res.status(500).send('Error interno del servidor');
         }
     }

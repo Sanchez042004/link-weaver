@@ -68,6 +68,20 @@ const envSchema = z.object({
         .string()
         .default('100')
         .transform((val) => parseInt(val, 10)),
+
+    // URL base para los cortadores (ej: http://localhost:3001, https://my.app)
+    BASE_URL: z
+        .string()
+        .url('BASE_URL debe ser una URL válida')
+        .optional()
+        .describe('URL base para construir las URLs cortas'),
+
+    // ID de la máquina para Snowflake (1-1024)
+    MACHINE_ID: z
+        .string()
+        .default('1')
+        .transform((val) => parseInt(val, 10))
+        .refine((val) => val >= 1 && val <= 1024, 'MACHINE_ID debe estar entre 1 y 1024'),
 });
 
 /**
@@ -77,6 +91,24 @@ const envSchema = z.object({
  * el servidor no arrancará y mostrará un error claro
  */
 const parseEnv = () => {
+    if (process.env.NODE_ENV === 'test') {
+        // En test, forzamos valores válidos para evitar validaciones fallidas por basura en .env
+        const testEnv = {
+            ...process.env,
+            // Sobreescribir con valores válidos garantizados
+            BASE_URL: 'http://test.local',
+            MACHINE_ID: '1',
+            PORT: '3000',
+            DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+            REDIS_URL: 'redis://localhost:6379',
+            JWT_SECRET: 'test-secret-must-be-at-least-32-chars-long',
+            FRONTEND_URL: 'http://localhost:3000',
+            // Mantener NODE_ENV
+            NODE_ENV: 'test',
+        };
+        return envSchema.parse(testEnv);
+    }
+
     try {
         return envSchema.parse(process.env);
     } catch (error) {

@@ -1,13 +1,13 @@
 import { prisma } from '@/config/database';
 import { UAParser } from 'ua-parser-js';
 import geoip from 'geoip-lite';
+import { Logger } from '@/config/logger';
 
 export class AnalyticsService {
     /**
      * Registrar un nuevo click
      * 
-     * Se ejecuta de forma asíncrona ("fire and forget") desde el controlador.
-     * Analiza el User Agent y la IP para extraer metadatos sin guardar la IP real.
+     * Se ejecuta de forma asíncrona ("fire and forget")
      */
     public static async trackClick(
         urlId: string,
@@ -27,7 +27,8 @@ export class AnalyticsService {
             const geo = geoip.lookup(ip);
             const country = geo ? geo.country : 'Unknown';
 
-            // 3. Guardar en DB
+            // 3. Guardar directamente en DB
+            // Eliminamos el buffer en memoria para evitar pérdida de datos en crash
             await prisma.click.create({
                 data: {
                     urlId,
@@ -41,8 +42,9 @@ export class AnalyticsService {
                     device,
                 },
             });
+
         } catch (error) {
-            console.error('⚠️ Error tracking click:', error);
+            Logger.error('⚠️ Error procesando click:', error);
         }
     }
 
