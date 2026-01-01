@@ -185,4 +185,3 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 ## 🙏 Agradecimientos
 
 - Inspirado en servicios como Bitly y TinyURL
-- Construido con ❤️ usando tecnologías modernas
