@@ -5,38 +5,48 @@ import { env } from '@/config/env';
 import { Logger } from '@/config/logger';
 
 export class RedirectController {
+    constructor(
+        private readonly urlService: UrlService,
+        private readonly analyticsService: AnalyticsService
+    ) { }
+
     /**
-     * Redireccionar a la URL original
+     * Redirect to original URL
      */
-    public static async redirect(req: Request, res: Response): Promise<void> {
+    public redirect = async (req: Request, res: Response): Promise<void> => {
         const { alias } = req.params;
 
         try {
-            const urlData = await UrlService.getUrlData(alias); // Cambiado de getLongUrl a getUrlData
+            const urlData = await this.urlService.getUrlData(alias);
 
             if (urlData) {
-                // Redirección inmediata (prioridad latencia)
+                // Avoid browser cache to count clicks
+                res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+                res.header('Pragma', 'no-cache');
+                res.header('Expires', '0');
+
+                // Immediate redirect
                 res.redirect(urlData.longUrl);
 
-                // Tracking asíncrono (Fire and forget)
-                // Usamos .catch() para manejar errores en la promesa flotante
+                // Tracking
                 const ip = req.ip || req.socket.remoteAddress || '';
                 const userAgent = req.headers['user-agent'] || '';
                 const referer = req.headers['referer'] || '';
 
-                AnalyticsService.trackClick(urlData.id, ip, userAgent, referer)
+                // Fire and forget
+                this.analyticsService.trackClick(urlData.id, ip, userAgent, referer)
                     .catch(err => Logger.error('Background tracking error:', err));
 
                 return;
             }
 
-            // Si no encuentra la URL
-            // Redirigir a página 404 del frontend (Mejor para usuarios)
+            // Not found -> Frontend 404
             res.redirect(`${env.FRONTEND_URL}/404?alias=${alias}`);
 
         } catch (error) {
-            Logger.error('Error en redirección:', error);
-            res.status(500).send('Error interno del servidor');
+            Logger.error('Error in redirect:', error);
+            // On error we might also want to redirect to frontend error page or just 500
+            res.status(500).send('Internal Server Error');
         }
     }
 }

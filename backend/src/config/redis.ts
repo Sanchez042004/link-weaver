@@ -1,5 +1,6 @@
 import { createClient, RedisClientType } from 'redis';
 import { env } from './env';
+import { Logger } from './logger';
 
 /**
  * Cliente de Redis - Singleton Pattern
@@ -9,7 +10,7 @@ import { env } from './env';
  * 2. Acelerar redirecciones (latencia <50ms)
  */
 
-class RedisClient {
+export class RedisClient {
     private static instance: RedisClient;
     private client: RedisClientType;
     private isConnected: boolean = false;
@@ -22,7 +23,7 @@ class RedisClient {
                 reconnectStrategy: (retries) => {
                     // Reintentar conexión con backoff exponencial
                     if (retries > 10) {
-                        console.error('❌ Redis: Máximo de reintentos alcanzado');
+                        Logger.error('❌ Redis: Máximo de reintentos alcanzado');
                         return new Error('Redis connection failed');
                     }
                     return Math.min(retries * 100, 3000);
@@ -32,22 +33,22 @@ class RedisClient {
 
         // Event listeners
         this.client.on('connect', () => {
-            console.log('🔄 Conectando a Redis...');
+            Logger.info('Conectando a Redis...');
         });
 
         this.client.on('ready', () => {
             this.isConnected = true;
-            console.log('✅ Conectado a Redis');
+            Logger.info('Conectado a Redis');
         });
 
         this.client.on('error', (error) => {
-            console.error('❌ Error en Redis:', error);
+            Logger.error('Error en Redis:', error);
             this.isConnected = false;
         });
 
         this.client.on('end', () => {
             this.isConnected = false;
-            console.log('🔌 Desconectado de Redis');
+            Logger.info('Desconectado de Redis');
         });
     }
 

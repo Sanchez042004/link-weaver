@@ -2,7 +2,7 @@ import express, { Application } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { env } from '@/config/env';
-import { RedirectController } from '@/controllers/redirect.controller';
+import { redirectController } from '@/container';
 import { globalLimiter } from '@/middlewares/rate-limit.middleware';
 import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middleware';
 
@@ -11,7 +11,6 @@ import packageJson from '../package.json';
 
 /**
  * Configuración de la aplicación Express
- * // ... (docs)
  */
 
 /**
@@ -89,7 +88,7 @@ app.get('/', (_req, res) => {
  */
 
 // Redirección de URLs cortas (ej: /xyz123)
-app.get('/:alias', RedirectController.redirect);
+app.get('/:alias', redirectController.redirect);
 
 /**
  * 404 - Not Found Handler
@@ -100,4 +99,3 @@ app.use(notFoundHandler);
  * Error Handler Global
  */
 app.use(globalErrorHandler);
-

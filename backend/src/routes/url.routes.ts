@@ -1,18 +1,20 @@
 import { Router } from 'express';
-import { UrlController } from '@/controllers/url.controller';
+import { urlController } from '@/container';
 import { optionalAuthenticate } from '@/middlewares/optional-auth.middleware';
+import { authenticate } from '@/middlewares/auth.middleware';
 
 const router = Router();
 
-import { authenticate } from '@/middlewares/auth.middleware';
+// POST /api/urls - Create short URL (public or authenticated)
+router.post('/', optionalAuthenticate, urlController.createShortUrl);
 
-// POST /api/urls - Crear URL corta (pública o autenticada)
-router.post('/', optionalAuthenticate, UrlController.createShortUrl);
+// GET /api/urls - List my URLs (Requires Auth)
+router.get('/', authenticate, urlController.getMyUrls);
 
-// GET /api/urls - Listar mis URLs (Requiere Auth)
-router.get('/', authenticate, UrlController.getMyUrls);
+// DELETE /api/urls/:id - Delete URL (Requires Auth)
+router.delete('/:id', authenticate, urlController.deleteUrl);
 
-// DELETE /api/urls/:id - Eliminar URL (Requiere Auth)
-router.delete('/:id', authenticate, UrlController.deleteUrl);
+// PATCH /api/urls/:id - Update URL (Requires Auth)
+router.patch('/:id', authenticate, urlController.updateUrl);
 
 export const urlRoutes = router;

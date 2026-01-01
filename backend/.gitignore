@@ -37,3 +37,11 @@ coverage/
 
 # Prisma
 prisma/migrations/**/migration.sql
+
+# Debug and test files
+check-users.ts
+debug-*.ts
+debug_output.txt
+test-click.ts
+test-result.txt
+users.txt

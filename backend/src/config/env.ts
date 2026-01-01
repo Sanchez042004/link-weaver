@@ -113,6 +113,7 @@ const parseEnv = () => {
         return envSchema.parse(process.env);
     } catch (error) {
         if (error instanceof z.ZodError) {
+            // Note: Using console.error here because Logger may not be initialized yet
             console.error('❌ Error en las variables de entorno:');
             error.issues.forEach((err) => {
                 console.error(`  - ${err.path.join('.')}: ${err.message}`);

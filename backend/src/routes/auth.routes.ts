@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { AuthController } from '@/controllers/auth.controller';
-import { authLimiter } from '@/middlewares/rate-limit.middleware';
+import { authController } from '@/container';
 
 const router = Router();
 
-// Rutas públicas
-router.post('/register', authLimiter, AuthController.register);
-router.post('/login', authLimiter, AuthController.login);
+// POST /api/auth/register
+router.post('/register', authController.register);
+
+// POST /api/auth/login
+router.post('/login', authController.login);
 
 export const authRoutes = router;

@@ -1,150 +1,139 @@
-import { prisma } from '@/config/database';
 import { nanoid } from 'nanoid';
 import { Url } from '@prisma/client';
-import { redisClient } from '@/config/redis';
+import { UrlRepository } from '@/repositories/url.repository';
+import { RedisClient } from '@/config/redis'; // Importing the class type
 import { Logger } from '@/config/logger';
+import { ConflictError, NotFoundError, ForbiddenError } from '@/errors';
 
 export class UrlService {
+    constructor(
+        private readonly urlRepository: UrlRepository,
+        private readonly redisClient: RedisClient
+    ) { }
+
     /**
-     * Crear una URL acortada
-     * 
-     * @param longUrl - URL original a acortar
-     * @param userId - ID del usuario (opcional)
-     * @param customAlias - Alias personalizado (opcional)
+     * Create a short URL
      */
-    public static async shortenUrl(
+    public async shortenUrl(
         longUrl: string,
         userId?: string,
         customAlias?: string
     ): Promise<Url> {
-
         let alias = customAlias;
 
-        // 1. Si hay custom alias, verificar disponibilidad
+        // 1. Verify custom alias availability
         if (alias) {
-            const existing = await prisma.url.findUnique({
-                where: { alias },
-            });
+            const existing = await this.urlRepository.findByAlias(alias);
             if (existing) {
-                throw new Error('El alias personalizado ya está en uso');
+                throw new ConflictError('El alias personalizado ya está en uso');
             }
         } else {
-            // 2. Si no, generar uno aleatorio usando Nanoid
+            // 2. Generate random alias using Nanoid
             alias = nanoid(7);
         }
 
         try {
-            // 3. Crear registro en DB
-            const url = await prisma.url.create({
-                data: {
-                    longUrl,
-                    alias,
-                    customAlias: !!customAlias,
-                    userId: userId || null, // null si es anónimo
-                },
+            // 3. Create record in DB
+            const url = await this.urlRepository.create({
+                longUrl,
+                alias,
+                customAlias: !!customAlias,
+                userId: userId || null,
             });
             return url;
         } catch (error: any) {
-            // Manejar colisión de alias (Race Condition)
+            // Handle alias collision (Race Condition)
             if (error.code === 'P2002' && error.meta?.target?.includes('alias')) {
-                throw new Error('El alias ya existe (intenta nuevamente)');
+                // If it was a custom alias, it's definitely a conflict
+                if (customAlias) {
+                    throw new ConflictError('El alias personalizado ya está en uso');
+                }
+                // If it was random, it's a collision on generated ID (rare but possible),
+                // client should retry (or we could retry recursively here)
+                throw new ConflictError('El alias ya existe (intenta nuevamente)');
             }
             throw error;
         }
     }
 
     /**
-   * Obtener URL por alias
-   * (Usado para redirección y verificación)
-   */
-    public static async getUrlByAlias(alias: string): Promise<Url | null> {
-        return prisma.url.findUnique({
-            where: { alias },
-        });
+     * Get URL by alias (for redirection/verification)
+     */
+    public async getUrlByAlias(alias: string): Promise<Url | null> {
+        return this.urlRepository.findByAlias(alias);
     }
 
     /**
-   * Obtener datos de URL por alias (Optimizado)
-   * Retorna { id, longUrl } para redirección y analytics
-   */
-    public static async getUrlData(alias: string): Promise<{ id: string; longUrl: string; expiresAt: Date | null } | null> {
-        const client = redisClient.getClient();
+     * Get URL data by alias (Optimized with Redis)
+     * Returns { id, longUrl } for redirection and analytics
+     */
+    public async getUrlData(alias: string): Promise<{ id: string; longUrl: string; expiresAt: Date | null } | null> {
+        const client = this.redisClient.getClient();
         const cacheKey = `url:${alias}`;
 
-        // 1. Intentar obtener de Redis
+        // 1. Try to get from Redis
         try {
-            if (redisClient.isReady()) {
+            if (this.redisClient.isReady()) {
                 const cached = await client.get(cacheKey);
                 if (cached) {
                     const parsed = JSON.parse(cached);
-                    // Hidratar fechas (JSON.parse devuelve strings)
+                    // Hydrate dates
                     if (parsed.expiresAt) {
                         parsed.expiresAt = new Date(parsed.expiresAt);
                     }
 
-                    // VALIDAR EXPIRACIÓN (Redis Cache)
+                    // VALIDATE EXPIRATION (Redis Cache)
                     if (parsed.expiresAt && new Date() > parsed.expiresAt) {
-                        // Si expiró, retornamos null (y idealmente invalidamos cache, pero el TTL se encargará)
                         return null;
                     }
                     return parsed;
                 }
             }
         } catch (error) {
-            Logger.warn('⚠️ Error leyendo de Redis:', error);
+            Logger.warn('⚠️ Error reading from Redis:', error);
         }
 
-        // 2. Buscar en DB
-        const url = await prisma.url.findUnique({
-            where: { alias },
-            select: { id: true, longUrl: true, expiresAt: true },
-        });
+        // 2. Search in DB
+        const url = await this.urlRepository.findByAlias(alias);
 
         if (!url) {
             return null;
         }
 
-        // VALIDAR EXPIRACIÓN (DB)
+        // VALIDATE EXPIRATION (DB)
         if (url.expiresAt && new Date() > url.expiresAt) {
             return null;
         }
 
-        // 3. Guardar en Redis
+        // 3. Save to Redis
         try {
-            if (redisClient.isReady()) {
-                await client.set(cacheKey, JSON.stringify(url), { EX: 86400 });
+            if (this.redisClient.isReady()) {
+                // Cache only necessary fields to save memory
+                const cacheData = {
+                    id: url.id,
+                    longUrl: url.longUrl,
+                    expiresAt: url.expiresAt
+                };
+                await client.set(cacheKey, JSON.stringify(cacheData), { EX: 86400 });
             }
         } catch (error) {
-            Logger.warn('⚠️ Error escribiendo en Redis:', error);
+            Logger.warn('⚠️ Error writing to Redis:', error);
         }
 
         return url;
     }
-    /**
-     * Obtener URLs de un usuario con paginación
-     */
-    public static async getUserUrls(userId: string, page: number = 1, limit: number = 10) {
-        const skip = (page - 1) * limit;
 
-        const [urls, total] = await Promise.all([
-            prisma.url.findMany({
-                where: { userId },
-                orderBy: { createdAt: 'desc' },
-                take: limit,
-                skip,
-                include: {
-                    _count: {
-                        select: { clicks: true },
-                    },
-                },
-            }),
-            prisma.url.count({ where: { userId } }),
-        ]);
+    /**
+     * Get user URLs with pagination
+     */
+    public async getUserUrls(userId: string, page: number = 1, limit: number = 10) {
+        const skip = (page - 1) * limit;
+        const [urls, total] = await this.urlRepository.findByUser(userId, skip, limit);
 
         return {
-            data: urls.map((url) => ({
+            data: urls.map((url: any) => ({
                 ...url,
-                clickCount: url._count.clicks,
+                clicks: url._count.clicks,
             })),
             meta: {
                 total,
@@ -156,31 +145,75 @@ export class UrlService {
     }
 
     /**
-     * Eliminar una URL
-     * Verifica que pertenezca al usuario
+     * Delete URL
      */
-    public static async deleteUrl(urlId: string, userId: string): Promise<void> {
-        // 1. Verificar propiedad
-        const url = await prisma.url.findUnique({
-            where: { id: urlId },
-        });
+    public async deleteUrl(urlId: string, userId: string): Promise<void> {
+        // 1. Verify ownership
+        const url = await this.urlRepository.findById(urlId);
 
         if (!url) {
-            throw new Error('URL no encontrada');
+            throw new NotFoundError('URL no encontrada');
         }
 
         if (url.userId !== userId) {
-            throw new Error('No autorizado para eliminar esta URL');
+            throw new ForbiddenError('No autorizado para eliminar esta URL');
         }
 
-        // 2. Eliminar (Cascade borrará clicks)
-        await prisma.url.delete({
-            where: { id: urlId },
+        // 2. Delete
+        await this.urlRepository.delete(urlId);
+
+        // 3. Invalidate Redis Cache
+        if (this.redisClient.isReady()) {
+            await this.redisClient.getClient().del(`url:${url.alias}`);
+        }
+    }
+
+    /**
+     * Update URL (longUrl or customAlias)
+     */
+    public async updateUrl(
+        urlId: string,
+        userId: string,
+        newLongUrl?: string,
+        newCustomAlias?: string
+    ): Promise<Url> {
+        // 1. Verify ownership
+        const url = await this.urlRepository.findById(urlId);
+
+        if (!url) {
+            throw new NotFoundError('URL no encontrada');
+        }
+
+        if (url.userId !== userId) {
+            throw new ForbiddenError('No autorizado para editar esta URL');
+        }
+
+        let alias = url.alias;
+
+        // 2. If alias changes, verify availability
+        if (newCustomAlias && newCustomAlias !== url.alias) {
+            const existing = await this.urlRepository.findByAlias(newCustomAlias);
+            if (existing) {
+                throw new ConflictError('El alias personalizado ya está en uso');
+            }
+            alias = newCustomAlias;
+        }
+
+        // 3. Update
+        const updatedUrl = await this.urlRepository.update(urlId, {
+            longUrl: newLongUrl || url.longUrl,
+            alias,
+            customAlias: !!newCustomAlias || url.customAlias,
         });
 
-        // 3. Invalidar Cache de Redis
-        if (redisClient.isReady()) {
-            await redisClient.getClient().del(`url:${url.alias}`);
+        // 4. Invalidate Redis Cache
+        if (this.redisClient.isReady()) {
+            await this.redisClient.getClient().del(`url:${url.alias}`);
+            if (alias !== url.alias) {
+                await this.redisClient.getClient().del(`url:${alias}`);
+            }
         }
+
+        return updatedUrl;
     }
 }

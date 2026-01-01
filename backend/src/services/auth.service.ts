@@ -1,116 +1,109 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { prisma } from '@/config/database';
 import { env } from '@/config/env';
 import { JwtPayload, AuthResponse } from '@/types/auth.types';
+import { UserRepository } from '@/repositories/user.repository';
+import { ConflictError, UnauthorizedError } from '@/errors';
 
 export class AuthService {
-    private static readonly SALT_ROUNDS = 10;
+    private readonly SALT_ROUNDS = 10;
+
+    constructor(private readonly userRepository: UserRepository) { }
 
     /**
-     * Generar hash de contraseña
+     * Register new user
      */
-    public static async hashPassword(password: string): Promise<string> {
-        return bcrypt.hash(password, this.SALT_ROUNDS);
+    public async register(email: string, password: string, name?: string): Promise<AuthResponse> {
+        // Normalize email
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Check availability
+        const existingUser = await this.userRepository.findByEmail(normalizedEmail);
+
+        if (existingUser) {
+            throw new ConflictError('El usuario ya existe');
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
+
+        // Create user
+        const user = await this.userRepository.create({
+            email: normalizedEmail,
+            password: hashedPassword,
+            name,
+        });
+
+        // Generate token
+        const token = this.generateToken({
+            userId: user.id,
+            email: user.email,
+        });
+
+        return {
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+            },
+        };
     }
 
     /**
-     * Verificar contraseña
+     * Login
      */
-    public static async verifyPassword(plain: string, hashed: string): Promise<boolean> {
-        return bcrypt.compare(plain, hashed);
+    public async login(email: string, password: string): Promise<AuthResponse> {
+        // Normalize email
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Find user
+        const user = await this.userRepository.findByEmail(normalizedEmail);
+
+        if (!user) {
+            throw new UnauthorizedError('Credenciales inválidas');
+        }
+
+        // Verify password
+        const isValid = await bcrypt.compare(password, user.password);
+
+        if (!isValid) {
+            throw new UnauthorizedError('Credenciales inválidas');
+        }
+
+        // Generate token
+        const token = this.generateToken({
+            userId: user.id,
+            email: user.email,
+        });
+
+        return {
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+            },
+        };
     }
 
     /**
-     * Generar JWT Token
+     * Generate JWT Token
      */
-    public static generateToken(payload: JwtPayload): string {
+    private generateToken(payload: JwtPayload): string {
         return jwt.sign(payload, env.JWT_SECRET, {
-            expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'], // Casting explícito
+            expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
         });
     }
 
     /**
-     * Verificar JWT Token
+     * Verify JWT Token (Public static or helper usually, used in middleware)
+     * If middleware uses it, it might be better to keep it static or move to a JwtUtil.
+     * The middleware imports verifyToken. I should probably keep it static or move independent logic.
+     * But since I am refactoring AuthService to be an instance, I should decide.
+     * Middleware `auth.middleware` likely uses `AuthService.verifyToken`.
      */
     public static verifyToken(token: string): JwtPayload {
         return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-    }
-
-    /**
-     * Registrar nuevo usuario
-     */
-    public static async register(email: string, password: string, name?: string): Promise<AuthResponse> {
-        // Verificar si el usuario ya existe
-        const existingUser = await prisma.user.findUnique({
-            where: { email },
-        });
-
-        if (existingUser) {
-            throw new Error('El usuario ya existe');
-        }
-
-        // Hashear password
-        const hashedPassword = await this.hashPassword(password);
-
-        // Crear usuario
-        const user = await prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name,
-            },
-        });
-
-        // Generar token
-        const token = this.generateToken({
-            userId: user.id,
-            email: user.email,
-        });
-
-        return {
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-            },
-        };
-    }
-
-    /**
-     * Iniciar sesión
-     */
-    public static async login(email: string, password: string): Promise<AuthResponse> {
-        // Buscar usuario
-        const user = await prisma.user.findUnique({
-            where: { email },
-        });
-
-        if (!user) {
-            throw new Error('Credenciales inválidas');
-        }
-
-        // Verificar password
-        const isValid = await this.verifyPassword(password, user.password);
-
-        if (!isValid) {
-            throw new Error('Credenciales inválidas');
-        }
-
-        // Generar token
-        const token = this.generateToken({
-            userId: user.id,
-            email: user.email,
-        });
-
-        return {
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-            },
-        };
     }
 }

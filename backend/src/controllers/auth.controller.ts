@@ -1,37 +1,46 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { AuthService } from '@/services/auth.service';
-import { Logger } from '@/config/logger';
+import { BadRequestError } from '@/errors';
 
-// Schemas de validación
+// Schemas
 const registerSchema = z.object({
-    email: z.string().email('Email inválido'),
+    email: z.string().email('Invalid email'),
     password: z
         .string()
-        .min(8, 'La contraseña debe tener al menos 8 caracteres')
-        .regex(/[A-Z]/, 'La contraseña debe tener al menos una mayúscula')
-        .regex(/[a-z]/, 'La contraseña debe tener al menos una minúscula')
-        .regex(/[0-9]/, 'La contraseña debe tener al menos un número')
-        .regex(/[^A-Za-z0-9]/, 'La contraseña debe tener al menos un carácter especial (ej: !@#$%)'),
+        .min(8, 'Password must be at least 8 characters long')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number')
+        .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character (e.g. !@#$%)'),
     name: z.string().optional(),
 });
 
 const loginSchema = z.object({
-    email: z.string().email('Email inválido'),
+    email: z.string().email('Invalid email'),
     password: z.string(),
 });
 
 export class AuthController {
-    /**
-     * Endpoint de Registro
-     */
-    public static async register(req: Request, res: Response): Promise<void> {
-        try {
-            // Validar input
-            const data = registerSchema.parse(req.body);
+    constructor(private readonly authService: AuthService) { }
 
-            // Ejecutar servicio
-            const result = await AuthService.register(data.email, data.password, data.name);
+    /**
+     * Register Endpoint
+     */
+    public register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            // Validate input
+            const validation = registerSchema.safeParse(req.body);
+
+            if (!validation.success) {
+                const errorMessage = validation.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+                throw new BadRequestError(errorMessage);
+            }
+
+            const data = validation.data;
+
+            // Execute service
+            const result = await this.authService.register(data.email, data.password, data.name);
 
             res.status(201).json({
                 success: true,
@@ -39,44 +48,27 @@ export class AuthController {
                 data: result,
             });
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                res.status(400).json({
-                    success: false,
-                    message: 'Error de validación',
-                    errors: error.issues,
-                });
-                return;
-            }
-
-            if (error instanceof Error && error.message === 'El usuario ya existe') {
-                // Respuesta genérica para evitar enumeración (pero informando conflicto para UX)
-                // Se puede decidir retornar 201 falso o un mensaje vago.
-                // Mantendremos 409 pero con mensaje menos agresivo
-                res.status(409).json({
-                    success: false,
-                    message: 'No se pudo completar el registro con estos datos',
-                });
-                return;
-            }
-
-            Logger.error('Error en register:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Error interno del servidor',
-            });
+            next(error);
         }
     }
 
     /**
-     * Endpoint de Login
+     * Login Endpoint
      */
-    public static async login(req: Request, res: Response): Promise<void> {
+    public login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // Validar input
-            const data = loginSchema.parse(req.body);
+            // Validate input
+            const validation = loginSchema.safeParse(req.body);
 
-            // Ejecutar servicio
-            const result = await AuthService.login(data.email, data.password);
+            if (!validation.success) {
+                const errorMessage = validation.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+                throw new BadRequestError(errorMessage);
+            }
+
+            const data = validation.data;
+
+            // Execute service
+            const result = await this.authService.login(data.email, data.password);
 
             res.status(200).json({
                 success: true,
@@ -84,28 +76,7 @@ export class AuthController {
                 data: result,
             });
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                res.status(400).json({
-                    success: false,
-                    message: 'Error de validación',
-                    errors: error.issues,
-                });
-                return;
-            }
-
-            if (error instanceof Error && error.message === 'Credenciales inválidas') {
-                res.status(401).json({
-                    success: false,
-                    message: 'Credenciales inválidas', // Standard message
-                });
-                return;
-            }
-
-            Logger.error('Error en login:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Error interno del servidor',
-            });
+            next(error);
         }
     }
 }

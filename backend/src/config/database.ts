@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { env } from './env';
+import { Logger } from './logger';
 
 /**
  * Cliente de Prisma - Singleton Pattern
@@ -45,9 +46,9 @@ process.on('beforeExit', async () => {
 export const connectDatabase = async (): Promise<void> => {
     try {
         await prisma.$connect();
-        console.log('✅ Conectado a PostgreSQL');
+        Logger.info('Conectado a PostgreSQL');
     } catch (error) {
-        console.error('❌ Error al conectar a PostgreSQL:', error);
+        Logger.error('Error al conectar a PostgreSQL:', error);
         process.exit(1);
     }
 };
@@ -57,5 +58,5 @@ export const connectDatabase = async (): Promise<void> => {
  */
 export const disconnectDatabase = async (): Promise<void> => {
     await prisma.$disconnect();
-    console.log('🔌 Desconectado de PostgreSQL');
+    Logger.info('Desconectado de PostgreSQL');
 };

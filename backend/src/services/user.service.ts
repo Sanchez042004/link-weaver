@@ -1,24 +1,23 @@
-import { prisma } from '@/config/database';
+import { UserRepository } from '@/repositories/user.repository';
+import { NotFoundError } from '@/errors';
 
 export class UserService {
+    constructor(private readonly userRepository: UserRepository) { }
+
     /**
-     * Obtener usuario por ID (sin password)
+     * Get user by ID (without password)
      */
-    public static async getUserById(userId: string) {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                createdAt: true,
-            },
-        });
+    public async getUserById(userId: string) {
+        const user = await this.userRepository.findById(userId);
 
         if (!user) {
-            throw new Error('Usuario no encontrado');
+            throw new NotFoundError('Usuario no encontrado');
         }
 
-        return user;
+        // Exclude password
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = user;
+
+        return userWithoutPassword;
     }
 }
