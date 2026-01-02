@@ -136,6 +136,7 @@ const LinkDetailsPage: React.FC = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleConfirmDelete}
+                alias={data?.alias || ''}
             />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
@@ -231,12 +232,6 @@ const LinkDetailsPage: React.FC = () => {
                                 setIsEditModalOpen(false);
                                 refetch();
                             }}
-                        />
-                        <DeleteLinkModal
-                            isOpen={isDeleteModalOpen}
-                            onClose={() => setIsDeleteModalOpen(false)}
-                            onConfirm={handleConfirmDelete}
-                            alias={data.alias}
                         />
                     </>
                 )}
