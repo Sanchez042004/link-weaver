@@ -47,18 +47,20 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// 🚀 DEBUG CORS TOTAL: Permisivo para encontrar el fallo
 app.use(
     cors({
         origin: (origin, callback) => {
-            console.log(`[CORS_CHECK] Origin Recibido: "${origin}" | Configurado: "${env.FRONTEND_URL}"`);
-            // Permitimos todo temporalmente para desbloquear al usuario
-            callback(null, true);
+            const allowedOrigin = env.FRONTEND_URL.replace(/\/$/, '');
+            // Permitir si no hay origin (mismo servidor), coincide exacto, o coincide sin barra final
+            if (!origin || origin.replace(/\/$/, '') === allowedOrigin) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
         },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-        exposedHeaders: ['Set-Cookie']
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
     })
 );
 
