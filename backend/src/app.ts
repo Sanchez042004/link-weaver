@@ -47,29 +47,18 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// LOG DE ORIGEN (Para depurar CORS)
-app.use((req, res, next) => {
-    if (req.method === 'OPTIONS' || req.headers.origin) {
-        console.log(`[CORS_DEBUG] Method: ${req.method} | Origin: ${req.headers.origin} | Path: ${req.path}`);
-    }
-    next();
-});
-
+// 🚀 DEBUG CORS TOTAL: Permisivo para encontrar el fallo
 app.use(
     cors({
         origin: (origin, callback) => {
-            const allowedOrigin = env.FRONTEND_URL.replace(/\/$/, '');
-            // Permitir si no hay origin (mismo servidor), coincide exacto, o coincide sin barra final
-            if (!origin || origin.replace(/\/$/, '') === allowedOrigin) {
-                callback(null, true);
-            } else {
-                console.warn(`[CORS_BLOCKED] Origin "${origin}" not allowed by config "${allowedOrigin}"`);
-                callback(new Error('Not allowed by CORS'));
-            }
+            console.log(`[CORS_CHECK] Origin Recibido: "${origin}" | Configurado: "${env.FRONTEND_URL}"`);
+            // Permitimos todo temporalmente para desbloquear al usuario
+            callback(null, true);
         },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+        exposedHeaders: ['Set-Cookie']
     })
 );
 
