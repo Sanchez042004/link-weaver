@@ -32,19 +32,12 @@ async function startServer() {
         /**
          * 3. Iniciar servidor Express
          */
-        // PUERTO SENIOR: Leemos del sistema, pero aseguramos 3000 como estándar de contenedores
-        const PORT = Number(process.env.PORT) || 3000;
-        console.log('--- DIAGNÓSTICO DE INICIO ---');
-        console.log(`PORT_ENV: ${process.env.PORT}`);
-        console.log(`PORT_ACTUAL: ${PORT}`);
-        console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-        console.log('-----------------------------');
-
-        const server = app.listen(PORT, '0.0.0.0', () => {
-            console.log('=============================================');
-            console.log(`✅ SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
-            console.log(`Entorno: ${env.NODE_ENV}`);
-            console.log('=============================================');
+        const PORT = env.PORT || 3001;
+        const server = app.listen(PORT, () => {
+            Logger.info('=============================================');
+            Logger.info(`🚀 SERVIDOR ESCUCHANDO EN EL PUERTO: ${PORT}`);
+            Logger.info(`Entorno: ${env.NODE_ENV}`);
+            Logger.info('=============================================');
         });
 
         server.on('error', (err: any) => {

@@ -14,41 +14,7 @@ import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middlew
  */
 export const app: Application = express();
 
-// 🟢 NIVEL 0: BYPASS DE SALUD UNIVERSAL (Regex para máxima compatibilidad)
-app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
 
-    // Captura /, /health, /api/health, /ping, /status con o sin barra final
-    const isHealthPath = /^\/(health|api\/health|ping|status)?\/?$/.test(req.path);
-
-    if (isHealthPath) {
-        console.log(`[${timestamp}] 💉 Nivel 0: EXTREME_HEALTH_CHECK: ${req.method} ${req.path}`);
-        res.status(200)
-            .header('Content-Type', 'application/json')
-            .header('Connection', 'close')
-            .header('X-Health-Check', 'Link-Weaver-Senior-Fixed')
-            .json({
-                status: 'ok',
-                service: 'link-weaver-backend',
-                timestamp: timestamp,
-                method: req.method,
-                path: req.path,
-                headers: req.headers // Devolver headers para diagnóstico remoto
-            });
-        return;
-    }
-
-    // Diagnóstico para el resto de rutas (Auth, URLs, etc)
-    console.log(`[${timestamp}] >>> INCOMING: ${req.method} ${req.url}`);
-    console.log(`[${timestamp}] HEADERS_DEBUG: ${JSON.stringify(req.headers)}`);
-
-    res.on('finish', () => {
-        console.log(`[${timestamp}] <<< OUTGOING: ${req.method} ${req.url} | STATUS: ${res.statusCode}`);
-    });
-    next();
-});
-
-// Rutas de salud de Nivel 1 eliminadas (ya se manejan arriba)
 
 /**
  * ============================================
@@ -56,16 +22,17 @@ app.use((req, res, next) => {
  * ============================================
  */
 
-app.use(helmet({
-    contentSecurityPolicy: false, // Desactivar temporalmente para evitar bloqueos
-}));
+app.use(helmet());
 
 // Configuración de Proxy (Crítico para PaaS como Back4App)
 if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1); // Confiar en el primer proxy (el de Back4App)
 }
 
-// Rutas de salud movidas arriba ^
+// Health check básico
+app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 
 app.use(
     cors({
