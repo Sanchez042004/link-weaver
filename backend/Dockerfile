@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 
 # Install build dependencies for Prisma
-RUN apk add --no-available --sync openssl libc6-compat
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN npm run build
 FROM node:20-alpine AS runner
 
 # Install runtime dependencies for Prisma
-RUN apk add --no-available --sync openssl libc6-compat
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
