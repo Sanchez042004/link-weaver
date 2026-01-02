@@ -5,6 +5,7 @@ import { DeepMockProxy } from 'vitest-mock-extended';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { UserRepository } from '@/repositories/user.repository';
 
 // Mock Modules
 vi.mock('@/config/database', async () => {
@@ -20,8 +21,13 @@ vi.mock('jsonwebtoken');
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
 describe('AuthService', () => {
+    let authService: AuthService;
+    let userRepository: UserRepository;
+
     beforeEach(() => {
         vi.clearAllMocks();
+        userRepository = new UserRepository(prismaMock as any);
+        authService = new AuthService(userRepository);
     });
 
     describe('register', () => {
@@ -47,7 +53,7 @@ describe('AuthService', () => {
             (jwt.sign as any).mockReturnValue(token);
 
             // Act
-            const result = await AuthService.register(email, password, name);
+            const result = await authService.register(email, password, name);
 
             // Assert
             expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email } });
@@ -75,7 +81,7 @@ describe('AuthService', () => {
             prismaMock.user.findUnique.mockResolvedValue({ id: 'existing' } as any);
 
             // Act & Assert
-            await expect(AuthService.register(email, 'pass')).rejects.toThrow('El usuario ya existe');
+            await expect(authService.register(email, 'pass')).rejects.toThrow('El usuario ya existe');
         });
     });
 
@@ -98,7 +104,7 @@ describe('AuthService', () => {
             (jwt.sign as any).mockReturnValue(token);
 
             // Act
-            const result = await AuthService.login(email, password);
+            const result = await authService.login(email, password);
 
             // Assert
             expect(result.token).toBe(token);
@@ -110,7 +116,7 @@ describe('AuthService', () => {
             prismaMock.user.findUnique.mockResolvedValue(null);
 
             // Act & Assert
-            await expect(AuthService.login('wrong@email.com', 'pass')).rejects.toThrow('Credenciales inválidas');
+            await expect(authService.login('wrong@email.com', 'pass')).rejects.toThrow('Usuario o contraseña inválidos');
         });
 
         it('should throw error if password is invalid', async () => {
@@ -124,7 +130,7 @@ describe('AuthService', () => {
             (bcrypt.compare as any).mockResolvedValue(false);
 
             // Act & Assert
-            await expect(AuthService.login(user.email, 'wrongpass')).rejects.toThrow('Credenciales inválidas');
+            await expect(authService.login(user.email, 'wrongpass')).rejects.toThrow('Usuario o contraseña inválidos');
         });
     });
 });

@@ -61,14 +61,14 @@ export class AuthService {
         const user = await this.userRepository.findByEmail(normalizedEmail);
 
         if (!user) {
-            throw new UnauthorizedError('Credenciales inválidas');
+            throw new UnauthorizedError('Usuario o contraseña inválidos');
         }
 
         // Verify password
         const isValid = await bcrypt.compare(password, user.password);
 
         if (!isValid) {
-            throw new UnauthorizedError('Credenciales inválidas');
+            throw new UnauthorizedError('Usuario o contraseña inválidos');
         }
 
         // Generate token

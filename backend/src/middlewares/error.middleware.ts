@@ -30,9 +30,9 @@ export const globalErrorHandler = (err: any, _req: Request, res: Response, _next
 
     // Determinar mensaje de error
     const message =
-        env.NODE_ENV === 'production'
-            ? 'Ocurrió un error en el servidor' // En producción, no revelar detalles
-            : err.message || 'Internal Server Error'; // En desarrollo, mostrar detalles
+        env.NODE_ENV === 'production' && !err.isOperational
+            ? 'Ocurrió un error en el servidor' // En producción, no revelar detalles de errores no operacionales
+            : err.message || 'Internal Server Error'; // Mostrar mensaje si es operacional o en desarrollo
 
     // Responder con error
     res.status(statusCode).json({
