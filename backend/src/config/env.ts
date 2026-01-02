@@ -22,7 +22,7 @@ const envSchema = z.object({
     // Puerto del servidor
     PORT: z
         .string()
-        .default('3001')
+        .default('3000')
         .transform((val) => parseInt(val, 10)),
 
     // URL de conexión a PostgreSQL
