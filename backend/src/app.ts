@@ -14,19 +14,28 @@ import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middlew
  */
 export const app: Application = express();
 
-// 🟢 NIVEL 0: BYPASS DE SALUD Y DIAGNÓSTICO (Intercepta antes que NADIE)
+// 🟢 NIVEL 0: BYPASS DE SALUD UNIVERSAL (Regex para máxima compatibilidad)
 app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
 
-    // Rutas de salud críticas para que el Gateway abra el tráfico
-    const healthPaths = ['/', '/health', '/api/health', '/api'];
-    if (healthPaths.includes(req.path)) {
-        console.log(`[${timestamp}] 💉 Nivel 0: HEALTH_CHECK_RESPONSE: ${req.method} ${req.path}`);
+    // Captura /, /health, /api/health, /ping, /status con o sin barra final
+    const isHealthPath = /^\/(health|api\/health|ping|status)?\/?$/.test(req.path);
+
+    if (isHealthPath) {
+        console.log(`[${timestamp}] 💉 Nivel 0: EXTREME_HEALTH_CHECK: ${req.method} ${req.path}`);
         res.status(200)
-            .set('Content-Type', 'text/plain')
-            .set('Connection', 'close') // Evitar keep-alive en health checks
-            .send('OK_ALIVE');
-        return; // IMPORTANTE: No llama a next(), termina aquí el proceso
+            .header('Content-Type', 'application/json')
+            .header('Connection', 'close')
+            .header('X-Health-Check', 'Link-Weaver-Senior-Fixed')
+            .json({
+                status: 'ok',
+                service: 'link-weaver-backend',
+                timestamp: timestamp,
+                method: req.method,
+                path: req.path,
+                headers: req.headers // Devolver headers para diagnóstico remoto
+            });
+        return;
     }
 
     // Diagnóstico para el resto de rutas (Auth, URLs, etc)
