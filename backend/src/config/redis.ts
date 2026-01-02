@@ -16,6 +16,14 @@ export class RedisClient {
     private isConnected: boolean = false;
 
     private constructor() {
+        if (!env.REDIS_URL) {
+            Logger.warn('⚠️ Redis deshabilitado: REDIS_URL no está configurado');
+            // Inicializar con un cliente dummy o null si es necesario, 
+            // pero las guardas en connect/isReady serán suficientes
+            this.client = {} as RedisClientType;
+            return;
+        }
+
         // Crear cliente de Redis
         this.client = createClient({
             url: env.REDIS_URL,
@@ -66,6 +74,7 @@ export class RedisClient {
      * Conectar a Redis
      */
     public async connect(): Promise<void> {
+        if (!env.REDIS_URL) return;
         if (!this.isConnected) {
             await this.client.connect();
         }
@@ -75,6 +84,7 @@ export class RedisClient {
      * Desconectar de Redis
      */
     public async disconnect(): Promise<void> {
+        if (!env.REDIS_URL) return;
         if (this.isConnected) {
             await this.client.disconnect();
         }

@@ -41,7 +41,8 @@ const envSchema = z.object({
         .refine(
             (url) => url.startsWith('redis://'),
             'REDIS_URL debe ser una conexión Redis'
-        ),
+        )
+        .optional(),
 
     // Secreto para firmar JWT
     JWT_SECRET: z

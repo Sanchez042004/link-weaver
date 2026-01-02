@@ -17,10 +17,14 @@ async function startServer() {
         await connectDatabase();
 
         /**
-         * 2. Conectar a Redis
+         * 2. Conectar a Redis (si está configurado)
          */
-        Logger.info('Conectando a Redis');
-        await redisClient.connect();
+        if (env.REDIS_URL) {
+            Logger.info('Conectando a Redis');
+            await redisClient.connect();
+        } else {
+            Logger.info('Redis omitido (no configurado)');
+        }
 
         /**
          * 3. Iniciar servidor Express
