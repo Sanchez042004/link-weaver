@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
     "build": "prisma generate && tsc -p tsconfig.prod.json && tsc-alias -p tsconfig.prod.json",
-    "start": "echo '🚀 Aplicando cambios a la DB...' && npx prisma db push --accept-data-loss && echo '✅ DB lista. Iniciando servidor...' && node dist/server.js",
+    "start": "node dist/server.js",
+    "db:migrate": "npx prisma db push --accept-data-loss",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

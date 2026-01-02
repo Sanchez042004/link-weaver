@@ -29,12 +29,25 @@ async function startServer() {
         /**
          * 3. Iniciar servidor Express
          */
-        const PORT = env.PORT;
-        const server = app.listen(PORT, '0.0.0.0', () => {
-            Logger.info(`Servidor iniciado correctamente`);
-            Logger.info(`Entorno: ${env.NODE_ENV}`);
-            Logger.info(`URL: ${env.BASE_URL || 'http://localhost:' + PORT}`);
-            Logger.info(`Health Check: http://localhost:${PORT}/health`);
+        /**
+         * 3. Iniciar servidor Express
+         */
+        const PORT = process.env.PORT || 10000;
+        console.log(`🚀 Intentando iniciar servidor en: 0.0.0.0:${PORT}`);
+
+        const server = app.listen(Number(PORT), '0.0.0.0', () => {
+            console.log('=============================================');
+            console.log(`✅ SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
+            console.log(`Entorno: ${env.NODE_ENV}`);
+            console.log('=============================================');
+        });
+
+        server.on('error', (err: any) => {
+            console.error('❌ ERROR FATAL AL INICIAR SERVIDOR:', err);
+            if (err.code === 'EADDRINUSE') {
+                console.error(`  El puerto ${PORT} ya está en uso.`);
+            }
+            process.exit(1);
         });
 
         // ... (shutdown handlers)

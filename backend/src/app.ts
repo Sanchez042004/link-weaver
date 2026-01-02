@@ -14,6 +14,13 @@ import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middlew
  */
 export const app: Application = express();
 
+// LOGGER SENIOR: Log de todas las peticiones entrantes ANTES de cualquier procesado
+app.use((req, _res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] API_REQUEST: ${req.method} ${req.originalUrl || req.url}`);
+    next();
+});
+
 /**
  * ============================================
  * MIDDLEWARES GLOBALES
@@ -22,10 +29,19 @@ export const app: Application = express();
 
 app.use(helmet());
 
-// Configuración de Proxy (Crítico para Rate Limit y Analytics detrás de Nginx/Cloudflare/Back4App)
+// Configuración de Proxy (Crítico para PaaS como Back4App)
 if (env.NODE_ENV === 'production') {
-    app.set('trust proxy', true);
+    app.set('trust proxy', 1); // Confiar en el primer proxy (el de Back4App)
 }
+
+// Health Check ANTES del CORS para diagnóstico puro
+app.get('/health', (_req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: 'link-weaver-backend'
+    });
+});
 
 app.use(
     cors({
@@ -53,15 +69,7 @@ app.use('/api/urls', urlRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/users', userRoutes);
 
-// Rutas base
-app.get('/health', (_req, res) => {
-    res.status(200).json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: env.NODE_ENV,
-    });
-});
+// Rutas base movidas al principio
 
 /**
  * Ruta raíz
