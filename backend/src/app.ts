@@ -14,21 +14,28 @@ import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middlew
  */
 export const app: Application = express();
 
-// LOGGER SENIOR: Log detallado de peticiones para detectar proxies y rutas
-app.use((req, _res, next) => {
+// DIAGNÓSTICO SENIOR: Log de entrada y salida (Final)
+app.use((req, res, next) => {
+    const start = Date.now();
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] API_REQUEST: ${req.method} ${req.originalUrl || req.url}`);
-    console.log(`[${timestamp}] HEADERS: Host=${req.get('host')}, X-Forwarded-For=${req.get('x-forwarded-for')}`);
+    console.log(`[${timestamp}] >>> INCOMING: ${req.method} ${req.url}`);
+
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`[${timestamp}] <<< OUTGOING: ${req.method} ${req.url} | STATUS: ${res.statusCode} | ${duration}ms`);
+    });
     next();
 });
 
-// RUTAS DE SALUD SENIOR: Manejan cualquier método para satisfacer proxies/firewalls
-app.all(['/', '/health'], (req, res) => {
+// RUTAS DE SALUD UNIVERSALES: Responden a todo en cualquier nivel
+app.all(['/', '/health', '/api/health'], (req, res) => {
     res.status(200).json({
         ok: true,
-        path: req.path,
+        service: 'link-weaver-backend',
         method: req.method,
-        timestamp: new Date().toISOString()
+        url: req.url,
+        env: process.env.NODE_ENV,
+        port: process.env.PORT
     });
 });
 

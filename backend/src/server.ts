@@ -33,6 +33,7 @@ async function startServer() {
          * 3. Iniciar servidor Express
          */
         const PORT = process.env.PORT || 10000;
+        console.log(`DEBUG: process.env.PORT reportado por el sistema: ${process.env.PORT}`);
         console.log(`🚀 Intentando iniciar servidor en: 0.0.0.0:${PORT}`);
 
         const server = app.listen(Number(PORT), '0.0.0.0', () => {
