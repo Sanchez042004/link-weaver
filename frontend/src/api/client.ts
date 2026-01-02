@@ -22,8 +22,10 @@ apiClient.interceptors.request.use((config) => {
 
 // Interceptor para manejo global de errores (ej: 401 Logout)
 apiClient.interceptors.response.use((response) => response, (error) => {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
-        // Auto-logout si el token expira o es inválido
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !isLoginRequest) {
+        // Auto-logout si el token expira o es inválido, pero no en el login mismo
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
