@@ -8,6 +8,7 @@ import FeaturesPage from './pages/FeaturesPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ShortUrlRedirect from './pages/ShortUrlRedirect';
 
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import PublicRoute from './features/auth/components/PublicRoute';
@@ -45,6 +46,9 @@ function App() {
             <LinkDetailsPage />
           </ProtectedRoute>
         } />
+
+        {/* Catch-all Short URL Redirect */}
+        <Route path="/:alias" element={<ShortUrlRedirect />} />
       </Routes>
     </AuthProvider>
   );
