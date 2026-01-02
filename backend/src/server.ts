@@ -33,9 +33,9 @@ async function startServer() {
          * 3. Iniciar servidor Express
          */
         const PORT = env.PORT || 3001;
-        const server = app.listen(PORT, () => {
+        const server = app.listen(PORT, '0.0.0.0', () => {
             Logger.info('=============================================');
-            Logger.info(`🚀 SERVIDOR ESCUCHANDO EN EL PUERTO: ${PORT}`);
+            Logger.info(`🚀 SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
             Logger.info(`Entorno: ${env.NODE_ENV}`);
             Logger.info('=============================================');
         });

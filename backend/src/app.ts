@@ -29,9 +29,13 @@ if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1); // Confiar en el primer proxy (el de Back4App)
 }
 
-// Health check básico
+// Health check para monitoreo de despliegue
 app.get('/health', (_req, res) => {
-    res.status(200).json({ status: 'ok' });
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: 'link-weaver-backend'
+    });
 });
 
 app.use(
