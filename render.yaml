@@ -16,15 +16,13 @@ services:
         fromDatabase:
           name: link-weaver-db
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: link-weaver-redis
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
         value: https://link-weaver.vercel.app # Cambia esto por tu URL de Vercel
+      # Redis URL - Deberás agregarlo manualmente después de crear Redis
+      # - key: REDIS_URL
+      #   value: redis://...
     healthCheckPath: /health
 
 databases:
@@ -32,10 +30,5 @@ databases:
   - name: link-weaver-db
     databaseName: linkweaver
     user: linkweaver
-    plan: free
-    region: oregon
-
-  # Redis Instance
-  - name: link-weaver-redis
     plan: free
     region: oregon
