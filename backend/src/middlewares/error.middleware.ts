@@ -17,8 +17,13 @@ export const notFoundHandler = (req: Request, res: Response) => {
  * Error Handler Global
  */
 export const globalErrorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
-    // Log del error centralizado
-    Logger.error('Unhandled Error:', err);
+    // Log del error centralizado - Incluir stack para debug en logs de Render
+    Logger.error('Unhandled Error:', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+        details: err
+    });
 
     // Determinar status code
     const statusCode = err.statusCode || err.status || 500;
