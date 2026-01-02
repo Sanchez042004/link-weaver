@@ -38,7 +38,7 @@ export class UrlService {
                 longUrl,
                 alias,
                 customAlias: !!customAlias,
-                userId: userId || null,
+                ...(userId ? { user: { connect: { id: userId } } } : {}),
             });
             return url;
         } catch (error: any) {

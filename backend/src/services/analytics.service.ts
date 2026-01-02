@@ -41,7 +41,7 @@ export class AnalyticsService {
 
             // 3. Save to DB via Repository
             await this.clickRepository.create({
-                urlId,
+                url: { connect: { id: urlId } },
                 timestamp: new Date(),
                 ipAddress: null, // Privacy
                 userAgent: userAgentString,
