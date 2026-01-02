@@ -39,4 +39,3 @@ databases:
   - name: link-weaver-redis
     plan: free
     region: oregon
-    maxmemoryPolicy: noeviction
