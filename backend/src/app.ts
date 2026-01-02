@@ -47,10 +47,29 @@ app.get('/health', (_req, res) => {
     });
 });
 
+// LOG DE ORIGEN (Para depurar CORS)
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS' || req.headers.origin) {
+        console.log(`[CORS_DEBUG] Method: ${req.method} | Origin: ${req.headers.origin} | Path: ${req.path}`);
+    }
+    next();
+});
+
 app.use(
     cors({
-        origin: env.FRONTEND_URL, // Solo permitir requests desde el frontend
-        credentials: true, // Permitir cookies/auth headers
+        origin: (origin, callback) => {
+            const allowedOrigin = env.FRONTEND_URL.replace(/\/$/, '');
+            // Permitir si no hay origin (mismo servidor), coincide exacto, o coincide sin barra final
+            if (!origin || origin.replace(/\/$/, '') === allowedOrigin) {
+                callback(null, true);
+            } else {
+                console.warn(`[CORS_BLOCKED] Origin "${origin}" not allowed by config "${allowedOrigin}"`);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
     })
 );
 
