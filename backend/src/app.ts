@@ -14,11 +14,22 @@ import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middlew
  */
 export const app: Application = express();
 
-// LOGGER SENIOR: Log de todas las peticiones entrantes ANTES de cualquier procesado
+// LOGGER SENIOR: Log detallado de peticiones para detectar proxies y rutas
 app.use((req, _res, next) => {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] API_REQUEST: ${req.method} ${req.originalUrl || req.url}`);
+    console.log(`[${timestamp}] HEADERS: Host=${req.get('host')}, X-Forwarded-For=${req.get('x-forwarded-for')}`);
     next();
+});
+
+// RUTAS DE SALUD SENIOR: Manejan cualquier método para satisfacer proxies/firewalls
+app.all(['/', '/health'], (req, res) => {
+    res.status(200).json({
+        ok: true,
+        path: req.path,
+        method: req.method,
+        timestamp: new Date().toISOString()
+    });
 });
 
 /**
@@ -34,14 +45,7 @@ if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1); // Confiar en el primer proxy (el de Back4App)
 }
 
-// Health Check ANTES del CORS para diagnóstico puro
-app.get('/health', (_req, res) => {
-    res.status(200).json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        service: 'link-weaver-backend'
-    });
-});
+// Rutas de salud movidas arriba ^
 
 app.use(
     cors({
@@ -71,16 +75,7 @@ app.use('/api/users', userRoutes);
 
 // Rutas base movidas al principio
 
-/**
- * Ruta raíz
- */
-app.get('/', (_req, res) => {
-    res.status(200).json({
-        message: 'Link Weaver API',
-        version: '1.0.0', // Hardcoded version or read it properly if needed
-        documentation: '/api/docs', // Futuro: Swagger/OpenAPI
-    });
-});
+// Ruta raíz movida arriba ^
 
 /**
  * ============================================
