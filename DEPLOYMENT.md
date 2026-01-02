@@ -13,6 +13,30 @@ Esta guía te llevará paso a paso para desplegar tu aplicación en producción.
 
 ---
 
+---
+
+## ☁️ PASO 1.5: Desplegar Backend en Back4App (Alternativa 24/7 Sin Tarjeta)
+
+Si prefieres una opción que no pida tarjeta de crédito y sea 24/7:
+
+1. **Ve a [Back4App Containers](https://www.back4app.com/products/containers)**
+2. **Conecta tu cuenta de GitHub** e importa este repositorio.
+3. **Configuración del Contenedor:**
+   - **Root Directory:** `backend`
+   - **Dockerfile Path:** `./Dockerfile` (Back4App lo buscará dentro de `backend/`)
+4. **Variables de Entorno (Environment Variables):**
+   ```
+   NODE_ENV=production
+   PORT=10000
+   DATABASE_URL=postgresql://... (Tu URL de Postgres)
+   REDIS_URL=redis://... (Tu URL de Redis)
+   JWT_SECRET=<genera-un-string-seguro>
+   FRONTEND_URL=https://tu-app.vercel.app
+   ```
+5. **Click en "Deploy"**
+
+---
+
 ## 🗄️ PASO 1: Desplegar Backend en Render
 
 ### Opción A: Despliegue Automático (Recomendado)

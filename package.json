@@ -1,0 +1,8 @@
+{
+  "name": "link-weaver-root",
+  "private": true,
+  "scripts": {
+    "build:backend": "cd backend && npm install && npm run build",
+    "start:backend": "cd backend && npm start"
+  }
+}
