@@ -1,5 +1,5 @@
 import { rateLimit } from 'express-rate-limit';
-import { env } from '@/config/env';
+
 
 /**
  * Limitador para rutas de autenticación (Login/Register)

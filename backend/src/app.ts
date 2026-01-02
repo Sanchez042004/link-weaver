@@ -3,11 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { env } from '@/config/env';
 import { redirectController } from '@/container';
-import { globalLimiter } from '@/middlewares/rate-limit.middleware';
 import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middleware';
-
-// Leer versión desde package.json
-import packageJson from '../package.json';
 
 /**
  * Configuración de la aplicación Express
@@ -41,9 +37,6 @@ app.use(
 app.use(express.json({ limit: '10mb' })); // Límite de 10MB para JSON
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Aplicar rate limiting a todas las rutas
-// app.use(globalLimiter);
-
 /**
  * ============================================
  * RUTAS
@@ -76,7 +69,7 @@ app.get('/health', (_req, res) => {
 app.get('/', (_req, res) => {
     res.status(200).json({
         message: 'Link Weaver API',
-        version: packageJson.version, // Dinámico
+        version: '1.0.0', // Hardcoded version or read it properly if needed
         documentation: '/api/docs', // Futuro: Swagger/OpenAPI
     });
 });

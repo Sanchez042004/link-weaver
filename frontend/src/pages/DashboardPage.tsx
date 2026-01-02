@@ -11,7 +11,7 @@ import { QRCodeModal } from '../features/links/components/QRCodeModal';
 import type { Url } from '../api/url.api';
 import { useNavigate } from 'react-router-dom';
 // ... imports
-import { useMinLoadingTime } from '../hooks/useMinLoadingTime';
+
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
