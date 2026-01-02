@@ -6,6 +6,7 @@ import { env } from '@/config/env';
  * 404 - Not Found Handler
  */
 export const notFoundHandler = (req: Request, res: Response) => {
+    console.log(`[${new Date().toISOString()}] 404_NOT_FOUND: ${req.method} ${req.path}`);
     res.status(404).json({
         error: 'Not Found',
         message: `La ruta ${req.method} ${req.path} no existe`,

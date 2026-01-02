@@ -18,7 +18,7 @@ export const app: Application = express();
 app.use((req, res, next) => {
     const start = Date.now();
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] >>> INCOMING: ${req.method} ${req.url}`);
+    console.log(`[${timestamp}] >>> INCOMING: ${req.method} ${req.url} | UA: ${req.get('user-agent')}`);
 
     res.on('finish', () => {
         const duration = Date.now() - start;
@@ -28,12 +28,13 @@ app.use((req, res, next) => {
 });
 
 // RUTAS DE SALUD UNIVERSALES: Responden a todo en cualquier nivel
-app.all(['/', '/health', '/api/health'], (req, res) => {
+app.all(['/', '/health', '/api/health', '/api'], (req, res) => {
+    console.log(`[${new Date().toISOString()}] HEALTH_CHECK_HIT: ${req.method} ${req.path}`);
     res.status(200).json({
         ok: true,
         service: 'link-weaver-backend',
+        path: req.path,
         method: req.method,
-        url: req.url,
         env: process.env.NODE_ENV,
         port: process.env.PORT
     });

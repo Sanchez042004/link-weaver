@@ -32,11 +32,11 @@ async function startServer() {
         /**
          * 3. Iniciar servidor Express
          */
-        const PORT = process.env.PORT || 10000;
+        const PORT = process.env.PORT || 8080;
         console.log(`DEBUG: process.env.PORT reportado por el sistema: ${process.env.PORT}`);
-        console.log(`🚀 Intentando iniciar servidor en: 0.0.0.0:${PORT}`);
+        console.log(`🚀 Intentando iniciar servidor en puerto: ${PORT}`);
 
-        const server = app.listen(Number(PORT), '0.0.0.0', () => {
+        const server = app.listen(Number(PORT), () => {
             console.log('=============================================');
             console.log(`✅ SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
             console.log(`Entorno: ${env.NODE_ENV}`);

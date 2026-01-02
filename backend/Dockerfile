@@ -37,10 +37,10 @@ COPY --from=builder /app/tsconfig.prod.json ./
 
 # Environment variables
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=8080
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8080
 
 # Start command
 CMD ["npm", "start"]
