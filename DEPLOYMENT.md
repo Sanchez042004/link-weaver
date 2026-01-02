@@ -15,6 +15,18 @@ Esta guía te llevará paso a paso para desplegar tu aplicación en producción.
 
 ---
 
+## ☁️ PASO 0: Base de Datos en Supabase (Recomendado)
+
+Para evitar que tu base de datos se borre después de 90 días (límite de Render), usa Supabase:
+
+1. **Crea un proyecto en [Supabase](https://supabase.com)** (Gratis, sin tarjeta).
+2. Ve a **Project Settings** -> **Database**.
+3. Busca **Connection String** y selecciona la pestaña **Prisma**.
+4. Copia la URL (será algo como `postgresql://postgres.[ID]:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`).
+5. **Añádela a Back4App** como `DATABASE_URL`.
+
+---
+
 ## ☁️ PASO 1.5: Desplegar Backend en Back4App (Alternativa 24/7 Sin Tarjeta)
 
 Si prefieres una opción que no pida tarjeta de crédito y sea 24/7:
@@ -130,9 +142,9 @@ Si prefieres configurar manualmente:
 
 5. **Variables de Entorno:**
    ```
-   VITE_API_URL=https://link-weaver-api.onrender.com
-   ```
-   ⚠️ **Importante:** Usa la URL de tu backend de Render (sin `/` al final)
+⚠️ **IMPORTANTE:** La URL debe terminar en `/api` y **NO** debe tener una barra `/` al final. 
+Ejemplo correcto: `https://tu-app.b4a.run/api`
+Ejemplo incorrecto: `https://tu-app.b4a.run/`
 
 6. **Click en "Deploy"**
 
