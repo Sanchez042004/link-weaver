@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
-    "build": "prisma generate && tsc -p tsconfig.prod.json",
+    "build": "prisma generate && tsc -p tsconfig.prod.json && tsc-alias -p tsconfig.prod.json",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
@@ -40,6 +40,7 @@
     "nanoid": "^3.3.11",
     "prisma": "^6.0.0",
     "redis": "^5.10.0",
+    "tsc-alias": "^1.8.8",
     "typescript": "^5.9.3",
     "ua-parser-js": "^2.0.7",
     "winston": "^3.19.0",
