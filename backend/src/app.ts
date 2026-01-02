@@ -29,6 +29,15 @@ if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1); // Confiar en el primer proxy (el de Back4App)
 }
 
+// Ruta de bienvenida
+app.get('/', (_req, res) => {
+    res.status(200).json({
+        message: 'Bienvenido a la API de Link Weaver',
+        version: '1.0.0',
+        status: 'online'
+    });
+});
+
 // Health check para monitoreo de despliegue
 app.get('/health', (_req, res) => {
     res.status(200).json({
