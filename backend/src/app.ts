@@ -14,39 +14,33 @@ import { globalErrorHandler, notFoundHandler } from '@/middlewares/error.middlew
  */
 export const app: Application = express();
 
-// DIAGNÓSTICO SENIOR: Log de entrada y salida (Final)
+// 🟢 NIVEL 0: DIAGNÓSTICO SENIOR (Antes de cualquier middleware)
 app.use((req, res, next) => {
-    const start = Date.now();
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] >>> INCOMING: ${req.method} ${req.url} | UA: ${req.get('user-agent')}`);
+    console.log(`[${timestamp}] >>> INCOMING: ${req.method} ${req.url}`);
+    console.log(`[${timestamp}] HEADERS_DEBUG: ${JSON.stringify(req.headers)}`);
 
     res.on('finish', () => {
-        const duration = Date.now() - start;
-        console.log(`[${timestamp}] <<< OUTGOING: ${req.method} ${req.url} | STATUS: ${res.statusCode} | ${duration}ms`);
+        console.log(`[${timestamp}] <<< OUTGOING: ${req.method} ${req.url} | STATUS: ${res.statusCode}`);
     });
     next();
 });
 
-// RUTAS DE SALUD UNIVERSALES: Responden a todo en cualquier nivel
+// 🟢 NIVEL 1: RESPUESTAS DE SALUD PURAS (Sin interferencia de Helmet/CORS)
 app.all(['/', '/health', '/api/health', '/api'], (req, res) => {
-    console.log(`[${new Date().toISOString()}] HEALTH_CHECK_HIT: ${req.method} ${req.path}`);
-    res.status(200).json({
-        ok: true,
-        service: 'link-weaver-backend',
-        path: req.path,
-        method: req.method,
-        env: process.env.NODE_ENV,
-        port: process.env.PORT
-    });
+    console.log(`[${new Date().toISOString()}] ✅ HIT_HEALTH_CHECK: ${req.method} ${req.path}`);
+    res.status(200).send('OK_ALIVE'); // Respuesta minimalista y ultra-compatible
 });
 
 /**
  * ============================================
- * MIDDLEWARES GLOBALES
+ * MIDDLEWARES GLOBALES (Ahora debajo de Salud)
  * ============================================
  */
 
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false, // Desactivar temporalmente para evitar bloqueos
+}));
 
 // Configuración de Proxy (Crítico para PaaS como Back4App)
 if (env.NODE_ENV === 'production') {
