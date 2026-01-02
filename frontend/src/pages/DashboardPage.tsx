@@ -7,20 +7,26 @@ import { LinksTable } from '../features/links/components/LinksTable';
 import { CreateLinkModal } from '../features/links/components/CreateLinkModal';
 import { EditLinkModal } from '../features/links/components/EditLinkModal';
 import { DeleteLinkModal } from '../features/links/components/DeleteLinkModal';
+import { QRCodeModal } from '../features/links/components/QRCodeModal';
 import type { Url } from '../api/url.api';
 import { useNavigate } from 'react-router-dom';
+// ... imports
+import { useMinLoadingTime } from '../hooks/useMinLoadingTime';
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { urls, isLoading, deleteLink, fetchUrls } = useLinks();
 
+    console.log('DashboardPage render:', { user, urls, isLoading });
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
     const [selectedLink, setSelectedLink] = useState<Url | null>(null);
-    const [linkToDeleteId, setLinkToDeleteId] = useState<string | null>(null);
+    const [linkToDelete, setLinkToDelete] = useState<Url | null>(null);
 
     const handleEdit = (url: Url) => {
         setSelectedLink(url);
@@ -28,14 +34,17 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleDeleteClick = (id: string) => {
-        setLinkToDeleteId(id);
-        setIsDeleteModalOpen(true);
+        const link = urls.find(u => u.id === id);
+        if (link) {
+            setLinkToDelete(link);
+            setIsDeleteModalOpen(true);
+        }
     };
 
     const handleConfirmDelete = async () => {
-        if (linkToDeleteId) {
-            await deleteLink(linkToDeleteId);
-            setLinkToDeleteId(null);
+        if (linkToDelete) {
+            await deleteLink(linkToDelete.id);
+            setLinkToDelete(null);
             setIsDeleteModalOpen(false);
         }
     };
@@ -81,6 +90,10 @@ const DashboardPage: React.FC = () => {
                         onEdit={handleEdit}
                         onDelete={handleDeleteClick}
                         onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
+                        onShowQR={(url) => {
+                            setSelectedLink(url);
+                            setIsQRModalOpen(true);
+                        }}
                     />
                 </section>
 
@@ -91,18 +104,27 @@ const DashboardPage: React.FC = () => {
                 />
 
                 {selectedLink && (
-                    <EditLinkModal
-                        isOpen={isEditModalOpen}
-                        onClose={() => setIsEditModalOpen(false)}
-                        link={selectedLink}
-                        onSuccess={handleSuccessEdit}
-                    />
+                    <>
+                        <EditLinkModal
+                            isOpen={isEditModalOpen}
+                            onClose={() => setIsEditModalOpen(false)}
+                            link={selectedLink}
+                            onSuccess={handleSuccessEdit}
+                        />
+                        <QRCodeModal
+                            isOpen={isQRModalOpen}
+                            onClose={() => setIsQRModalOpen(false)}
+                            url={selectedLink.shortUrl}
+                            alias={selectedLink.alias}
+                        />
+                    </>
                 )}
 
                 <DeleteLinkModal
                     isOpen={isDeleteModalOpen}
                     onClose={() => setIsDeleteModalOpen(false)}
                     onConfirm={handleConfirmDelete}
+                    alias={linkToDelete?.alias || ''}
                 />
             </div>
         </DashboardLayout>

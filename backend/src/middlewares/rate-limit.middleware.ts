@@ -11,14 +11,14 @@ import { env } from '@/config/env';
  */
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 10, // Máximo 10 intentos por IP cada 15 min
+    max: 1000, // Máximo 1000 intentos (efectivamente deshabilitado para uso normal)
     message: {
         success: false,
         message: 'Demasiados intentos de inicio de sesión. Por favor intenta nuevamente en 15 minutos.',
     },
     standardHeaders: true,
     legacyHeaders: false,
-    skipSuccessfulRequests: true, // Opcional: no contar logins exitosos (para evitar bloquear usuarios legítimos que se equivoquen un par de veces)
+    skipSuccessfulRequests: true,
 });
 
 /**
@@ -26,9 +26,9 @@ export const authLimiter = rateLimit({
  * Aplica a todas las rutas de la API
  */
 export const globalLimiter = rateLimit({
-    windowMs: env.RATE_LIMIT_WINDOW_MS, // Ventana de tiempo
-    max: env.RATE_LIMIT_MAX_REQUESTS, // Máximo de requests por ventana
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 10000, // 10000 requests por ventana (muy permisivo)
     message: 'Demasiadas peticiones desde esta IP, por favor intenta más tarde.',
-    standardHeaders: true, // Retorna info de rate limit en headers `RateLimit-*`
-    legacyHeaders: false, // Deshabilita headers `X-RateLimit-*`
+    standardHeaders: true,
+    legacyHeaders: false,
 });

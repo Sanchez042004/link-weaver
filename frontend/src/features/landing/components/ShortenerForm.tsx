@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { urlApi, type Url } from '../../../api/url.api';
+import { QRCodeModal } from '../../links/components/QRCodeModal';
 
 const ShortenerForm: React.FC = () => {
     const [longUrl, setLongUrl] = useState('');
@@ -8,6 +9,7 @@ const ShortenerForm: React.FC = () => {
     const [result, setResult] = useState<Url | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
     const handleSubmit = async () => {
         if (!longUrl) return;
@@ -101,7 +103,11 @@ const ShortenerForm: React.FC = () => {
                             </a>
                         </div>
                         <div className="flex gap-2">
-                            <button className="p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="QR Code">
+                            <button
+                                onClick={() => setIsQRModalOpen(true)}
+                                className="p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                title="QR Code"
+                            >
                                 <span className="material-symbols-outlined">qr_code</span>
                             </button>
                             <button
@@ -115,6 +121,15 @@ const ShortenerForm: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {result && (
+                <QRCodeModal
+                    isOpen={isQRModalOpen}
+                    onClose={() => setIsQRModalOpen(false)}
+                    url={result.shortUrl}
+                    alias={result.alias}
+                />
+            )}
             {/* Decorative glow under card */}
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-20 group-hover/shortener:opacity-30 transition duration-1000 -z-10"></div>
         </div>

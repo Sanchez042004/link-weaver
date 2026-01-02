@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 
 const SignupPage: React.FC = () => {
@@ -48,10 +49,7 @@ const SignupPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between h-16">
                         <Link to="/" className="flex items-center gap-3">
-                            <div className="size-10 flex items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <span className="material-symbols-outlined">link</span>
-                            </div>
-                            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Knot.ly</span>
+                            <Logo />
                         </Link>
                         <div className="flex items-center gap-3">
                             <span className="hidden sm:block text-sm font-medium text-slate-500 dark:text-slate-400">Already have an account?</span>
@@ -134,17 +132,16 @@ const SignupPage: React.FC = () => {
                                     <div className="mt-2 p-3 rounded-lg bg-slate-50 dark:bg-[#192233] border border-slate-200 dark:border-[#324467]">
                                         <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Password must contain:</p>
                                         <ul className="space-y-1">
-                                            {/* Validation rules */}
-                                            <li className={`text-xs flex items-center gap-2 ${password.length >= 8 ? 'text-green-600' : 'text-slate-500'}`}>
-                                                <span className="material-symbols-outlined text-[14px]">{password.length >= 8 ? 'check_circle' : 'circle'}</span> 8+ chars
-                                            </li>
-                                            {/* ... other rules omitted for brevity but logic exists ... */}
+                                            <PasswordReq label="Minimum 8 characters" met={password.length >= 8} />
+                                            <PasswordReq label="At least one uppercase letter" met={/[A-Z]/.test(password)} />
+                                            <PasswordReq label="At least one lowercase letter" met={/[a-z]/.test(password)} />
+                                            <PasswordReq label="At least one number" met={/[0-9]/.test(password)} />
+                                            <PasswordReq label="At least one special character" met={/[!@#$%^&*(),.?":{}|<> ]/.test(password)} />
                                         </ul>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Confirm Password omitted for brevity but should be similar */}
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Confirm Password</label>
                                 <div className="relative group">
@@ -169,8 +166,16 @@ const SignupPage: React.FC = () => {
                                     </button>
                                 </div>
                                 {confirmPasswordFocused && confirmPassword.length > 0 && (
-                                    <div className="mt-2 p-2 text-xs">
-                                        {confirmPassword === password ? <span className="text-green-500">Match</span> : <span className="text-red-500">No match</span>}
+                                    <div className="mt-2 text-xs flex items-center gap-2">
+                                        {confirmPassword === password ? (
+                                            <div className="text-green-500 font-medium flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[16px]">check_circle</span> Passwords match
+                                            </div>
+                                        ) : (
+                                            <div className="text-red-500 font-medium flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[16px]">cancel</span> Passwords do not match
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -201,5 +206,14 @@ const SignupPage: React.FC = () => {
         </div>
     );
 };
+
+const PasswordReq = ({ label, met }: { label: string, met: boolean }) => (
+    <li className={`text-xs flex items-center gap-2 transition-colors ${met ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>
+        <span className={`material-symbols-outlined text-[14px] ${met ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}`}>
+            {met ? 'check_circle' : 'circle'}
+        </span>
+        {label}
+    </li>
+);
 
 export default SignupPage;

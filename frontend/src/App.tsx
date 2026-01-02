@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import DashboardPage from './pages/DashboardPage';
 import LinkDetailsPage from './pages/LinkDetailsPage';
 import GeneralAnalyticsPage from './pages/GeneralAnalyticsPage';
+import FeaturesPage from './pages/FeaturesPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -15,11 +16,8 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={
-          <PublicRoute>
-            <LandingPage />
-          </PublicRoute>
-        } />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
         <Route path="/login" element={
           <PublicRoute>
             <LoginPage />

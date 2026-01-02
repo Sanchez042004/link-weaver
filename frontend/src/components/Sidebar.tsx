@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import Logo from './Logo';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -34,13 +35,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             {/* Sidebar Container */}
             <aside className={`fixed top-0 left-0 bottom-0 w-72 h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark transition-transform duration-300 z-[70] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="h-16 flex items-center px-6 lg:px-8 border-b border-slate-200/50 dark:border-slate-800/50">
-                    <Link to="/dashboard" className="flex items-center gap-3">
-                        <div className="size-10 flex items-center justify-center rounded-lg bg-primary/10">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6 text-primary">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                            </svg>
-                        </div>
-                        <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Knot.ly</span>
+                    <Link to="/dashboard">
+                        <Logo />
                     </Link>
                     {/* Close button for mobile */}
                     <button onClick={onClose} className="lg:hidden ml-auto p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">

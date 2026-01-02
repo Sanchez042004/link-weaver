@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
@@ -27,10 +28,7 @@ const LoginPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between h-16">
                         <Link to="/" className="flex items-center gap-3">
-                            <div className="size-10 flex items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <span className="material-symbols-outlined">link</span>
-                            </div>
-                            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Knot.ly</span>
+                            <Logo />
                         </Link>
                         <div className="flex items-center gap-3">
                             <span className="hidden sm:block text-sm font-medium text-slate-500 dark:text-slate-400">Don't have an account?</span>

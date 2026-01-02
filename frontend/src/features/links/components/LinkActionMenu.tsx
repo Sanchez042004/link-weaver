@@ -57,7 +57,7 @@ export const LinkActionMenu: React.FC<LinkActionMenuProps> = ({ onEdit, onDelete
                         left: position.left,
                         zIndex: 9999
                     }}
-                    className="w-48 bg-white dark:bg-surface-dark rounded-xl shadow-xl border border-slate-100 dark:border-border-dark overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                    className="w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="py-1">

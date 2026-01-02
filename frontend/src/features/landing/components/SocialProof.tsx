@@ -268,7 +268,7 @@ const SocialProof: React.FC = () => {
                             <p className="text-slate-600 dark:text-slate-400 mt-1">Start creating powerful, trackable short links today.</p>
                         </div>
                         <div className="flex gap-4 w-full md:w-auto">
-                            <a href="#" className="flex-1 md:flex-none py-3 px-6 bg-transparent border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors text-center">
+                            <a href="/features" className="flex-1 md:flex-none py-3 px-6 bg-transparent border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors text-center">
                                 Features
                             </a>
                             <a href="/signup" className="flex-1 md:flex-none py-3 px-6 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 transition-all text-center">

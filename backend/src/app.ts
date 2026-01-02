@@ -42,7 +42,7 @@ app.use(express.json({ limit: '10mb' })); // Límite de 10MB para JSON
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Aplicar rate limiting a todas las rutas
-app.use(globalLimiter);
+// app.use(globalLimiter);
 
 /**
  * ============================================

@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { formatDistanceToNow } from 'date-fns';
 import { useLinkAnalytics } from '../hooks/useAnalytics';
-import { useLinks } from '../hooks/useLinks'; // reuse deleteLink
+import { useLinks } from '../hooks/useLinks';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { EditLinkModal } from '../features/links/components/EditLinkModal';
 import { DeleteLinkModal } from '../features/links/components/DeleteLinkModal';
+import Skeleton from '../components/ui/Skeleton';
+
+// ... imports
+// ... imports
 
 const LinkDetailsPage: React.FC = () => {
     const { alias } = useParams<{ alias: string }>();
     const navigate = useNavigate();
     const { data, loading, error, refetch } = useLinkAnalytics(alias);
-    const { deleteLink } = useLinks(); // This hook handles deletion logic
+    const { deleteLink } = useLinks();
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -37,8 +42,63 @@ const LinkDetailsPage: React.FC = () => {
     if (loading) {
         return (
             <DashboardLayout>
-                <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
-                    <span className="material-symbols-outlined text-[40px] animate-spin text-primary">progress_activity</span>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+                    {/* Header Skeleton */}
+                    <div className="flex flex-col gap-4 border-b border-slate-800 pb-6">
+                        <Skeleton className="h-4 w-32" />
+                        <div className="flex justify-between items-start">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="h-10 w-48" />
+                                    <Skeleton className="h-6 w-16 rounded" />
+                                </div>
+                                <Skeleton className="h-5 w-64" />
+                            </div>
+                            <div className="flex gap-3">
+                                <Skeleton className="h-10 w-24 rounded-lg" />
+                                <Skeleton className="h-10 w-32 rounded-lg" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats Skeleton */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-32 rounded-xl bg-slate-800/40 border border-slate-700/50 p-6 flex flex-col justify-between">
+                                <div className="flex justify-between">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="size-10 rounded-lg" />
+                                </div>
+                                <Skeleton className="h-8 w-16" />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Chart Skeleton */}
+                    <div className="h-[300px] rounded-xl bg-slate-800/40 border border-slate-700/50 p-6">
+                        <Skeleton className="h-6 w-48 mb-6" />
+                        <Skeleton className="h-full w-full rounded-lg opacity-20" />
+                    </div>
+
+                    {/* Top Lists Skeleton */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {[1, 2].map(i => (
+                            <div key={i} className="h-64 rounded-xl bg-slate-800/40 border border-slate-700/50 p-6 flex flex-col gap-4">
+                                <Skeleton className="h-6 w-32" />
+                                <div className="space-y-4">
+                                    {[1, 2, 3, 4].map(j => (
+                                        <div key={j} className="flex flex-col gap-2">
+                                            <div className="flex justify-between">
+                                                <Skeleton className="h-4 w-24" />
+                                                <Skeleton className="h-4 w-8" />
+                                            </div>
+                                            <Skeleton className="h-2 w-full rounded-full" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </DashboardLayout>
         );
@@ -78,7 +138,7 @@ const LinkDetailsPage: React.FC = () => {
                 onConfirm={handleConfirmDelete}
             />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8 animate-in fade-in">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
                 {/* Header Navigation */}
                 <div className="flex items-center gap-2 text-sm">
                     <Link className="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" to="/dashboard">Dashboard</Link>
@@ -113,12 +173,17 @@ const LinkDetailsPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <StatBox title="Total Clicks" value={data.totalClicks} icon="ads_click" color="primary" />
                     <StatBox title="Created" value={new Date(data.createdAt).toLocaleDateString()} icon="calendar_today" color="purple" />
-                    <StatBox title="Last Click" value={data.lastAccessed ? new Date(data.lastAccessed).toLocaleDateString() : 'Never'} icon="schedule" color="orange" />
+                    <StatBox
+                        title="Last Click"
+                        value={data.lastAccessed ? formatDistanceToNow(new Date(data.lastAccessed), { addSuffix: true }) : 'Never'}
+                        icon="schedule"
+                        color="orange"
+                    />
                 </div>
 
                 {/* Main Chart */}
-                <div className="rounded-xl border border-slate-200 dark:border-[#324467] bg-white dark:bg-[#111722] p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Engagement (Last 7 Days)</h3>
+                <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm p-6">
+                    <h3 className="text-lg font-bold text-white mb-6">Engagement (Last 7 Days)</h3>
                     <div className="w-full h-[240px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={chartData}>
@@ -138,6 +203,13 @@ const LinkDetailsPage: React.FC = () => {
                     </div>
                 </div>
 
+
+                {/* Top Lists */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <TopList title="Top Locations" items={data.blocks?.countries} type="country" total={data.totalClicks} />
+                    <TopList title="Top Devices" items={data.blocks?.devices} type="device" total={data.totalClicks} />
+                </div>
+
                 {/* Delete Zone */}
                 <div className="p-6 rounded-xl border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
@@ -148,24 +220,82 @@ const LinkDetailsPage: React.FC = () => {
                         Delete Link
                     </button>
                 </div>
+
+                {data && (
+                    <>
+                        <EditLinkModal
+                            isOpen={isEditModalOpen}
+                            onClose={() => setIsEditModalOpen(false)}
+                            link={data}
+                            onSuccess={() => {
+                                setIsEditModalOpen(false);
+                                refetch();
+                            }}
+                        />
+                        <DeleteLinkModal
+                            isOpen={isDeleteModalOpen}
+                            onClose={() => setIsDeleteModalOpen(false)}
+                            onConfirm={handleConfirmDelete}
+                            alias={data.alias}
+                        />
+                    </>
+                )}
             </div>
         </DashboardLayout>
     );
 };
 
 const StatBox = ({ title, value, icon, color }: any) => {
-    const colors: any = { primary: 'text-primary bg-primary/10', purple: 'text-purple-500 bg-purple-500/10', orange: 'text-orange-500 bg-orange-500/10' };
+    const colorClasses: any = {
+        primary: { icon: 'text-primary', bg: 'bg-primary/10' },
+        purple: { icon: 'text-purple-500', bg: 'bg-purple-500/10' },
+        orange: { icon: 'text-orange-500', bg: 'bg-orange-500/10' }
+    };
+    const c = colorClasses[color] || colorClasses.primary;
+
     return (
-        <div className="flex flex-col justify-between gap-4 rounded-xl p-6 bg-white dark:bg-[#111722] border border-slate-200 dark:border-[#324467] shadow-sm">
-            <div className={`p-2 rounded-lg w-fit ${colors[color]}`}>
-                <span className="material-symbols-outlined">{icon}</span>
+        <div className="flex flex-col gap-2 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+                <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">{title}</p>
+                <div className={`size-10 flex items-center justify-center ${c.bg} rounded-lg`}>
+                    <span className={`material-symbols-outlined text-[24px] ${c.icon}`}>{icon}</span>
+                </div>
             </div>
-            <div>
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{title}</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white truncate" title={value}>{value}</p>
+            <div className="flex items-end gap-3 mt-auto">
+                <p className="text-2xl font-black text-white tracking-tight">{value}</p>
             </div>
         </div>
-    )
-}
+    );
+};
+
+const TopList = ({ title, items, type, total }: any) => {
+    return (
+        <div className="bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">{type === 'country' ? 'public' : 'devices'}</span>
+                {title}
+            </h3>
+            <div className="space-y-3">
+                {items?.slice(0, 5).map((item: any) => {
+                    const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
+                    return (
+                        <div key={item.name} className="flex flex-col gap-2">
+                            <div className="flex justify-between text-sm font-medium">
+                                <span className="text-white flex items-center gap-2">
+                                    {type === 'country' && item.name !== 'Unknown' && <img src={`https://flagcdn.com/w20/${item.name.toLowerCase()}.png`} className="w-5 h-auto rounded" alt={item.name} />}
+                                    {item.name}
+                                </span>
+                                <span className="text-slate-400">{percentage}%</span>
+                            </div>
+                            <div className="w-full bg-slate-700/50 rounded-full h-2">
+                                <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${percentage}%` }}></div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
 
 export default LinkDetailsPage;

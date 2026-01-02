@@ -39,7 +39,16 @@ export const authApi = {
 
 const handleApiError = (error: unknown) => {
     if (error instanceof AxiosError && error.response) {
-        throw new Error(error.response.data.message || 'Authentication failed');
+        // Si el backend devuelve un mensaje en JSON
+        if (error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
+            throw new Error((error.response.data as any).message);
+        }
+        // Si devuelve un string (ej: HTML de 404 o texto plano)
+        if (typeof error.response.data === 'string') {
+            throw new Error(error.response.data);
+        }
+        // Fallback status text
+        throw new Error(`Request failed with status ${error.response.status}`);
     }
-    throw new Error('Network error');
+    throw new Error('Network error - Is the backend running?');
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { type Url } from '../../../api/url.api';
 import { LinkActionMenu } from './LinkActionMenu';
+import Skeleton from '../../../components/ui/Skeleton';
 
 interface LinksTableProps {
     urls: Url[];
@@ -8,9 +9,11 @@ interface LinksTableProps {
     onEdit: (url: Url) => void;
     onDelete: (id: string) => void;
     onAnalytics: (alias: string) => void;
+    onShowQR: (url: Url) => void;
 }
 
-export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit, onDelete, onAnalytics }) => {
+export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit, onDelete, onAnalytics, onShowQR }) => {
+    // ... existing state
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const copyToClipboard = (text: string, id: string) => {
@@ -23,12 +26,23 @@ export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit,
         return (
             <div className="w-full overflow-x-auto rounded-xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm">
                 <table className="w-full text-left border-collapse">
-                    <tbody>
+                    <thead>
+                        <tr className="bg-slate-800/60 border-b border-slate-700/50">
+                            <th className="p-4 px-6 text-xs text-slate-500 font-semibold uppercase">Original URL</th>
+                            <th className="p-4 text-xs text-slate-500 font-semibold uppercase">Short Link</th>
+                            <th className="p-4 text-xs text-slate-500 font-semibold uppercase hidden sm:table-cell">Date</th>
+                            <th className="p-4 text-xs text-slate-500 font-semibold uppercase text-center">Clicks</th>
+                            <th className="p-4 px-6 text-xs text-slate-500 font-semibold uppercase text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700/50">
                         {[...Array(5)].map((_, i) => (
-                            <tr key={i} className="border-b border-slate-700/50">
-                                <td className="p-4"><div className="h-6 w-32 bg-slate-700/50 rounded animate-pulse" /></td>
-                                <td className="p-4"><div className="h-6 w-24 bg-slate-700/50 rounded animate-pulse" /></td>
-                                <td className="p-4"><div className="h-6 w-20 bg-slate-700/50 rounded animate-pulse" /></td>
+                            <tr key={i}>
+                                <td className="p-4 px-6"><div className="flex items-center gap-3"><Skeleton className="size-8 rounded" /><Skeleton className="h-4 w-48" /></div></td>
+                                <td className="p-4"><Skeleton className="h-6 w-24 rounded" /></td>
+                                <td className="p-4 hidden sm:table-cell"><Skeleton className="h-4 w-20" /></td>
+                                <td className="p-4"><div className="flex justify-center"><Skeleton className="h-5 w-8 rounded-full" /></div></td>
+                                <td className="p-4 px-6"><div className="flex justify-center gap-2"><Skeleton className="size-8 rounded-lg" /><Skeleton className="size-8 rounded-lg" /><Skeleton className="size-8 rounded-lg" /></div></td>
                             </tr>
                         ))}
                     </tbody>
@@ -37,7 +51,7 @@ export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit,
         );
     }
 
-    if (urls.length === 0) {
+    if (!urls || urls.length === 0) {
         return (
             <div className="w-full p-8 text-center rounded-xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm">
                 <p className="text-slate-500 dark:text-slate-400">No links created yet. Click "Create New Link" to get started!</p>
@@ -54,7 +68,7 @@ export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit,
                         <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Short Link</th>
                         <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hidden sm:table-cell">Date</th>
                         <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-center">Clicks</th>
-                        <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right px-6">Action</th>
+                        <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-center px-6">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/50">
@@ -81,11 +95,11 @@ export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit,
                                     {url.clicks}
                                 </span>
                             </td>
-                            <td className="p-4 px-6 text-right">
-                                <div className="flex gap-2 justify-end items-center">
+                            <td className="p-4 px-6 text-center">
+                                <div className="flex gap-2 justify-center items-center">
                                     <button
                                         onClick={() => copyToClipboard(url.shortUrl, url.id)}
-                                        className={`inline - flex items - center justify - center size - 8 rounded - lg transition - colors ${copiedId === url.id
+                                        className={`inline-flex items-center justify-center size-8 rounded-lg transition-colors ${copiedId === url.id
                                             ? 'text-primary bg-primary/10'
                                             : 'text-slate-400 hover:text-primary hover:bg-primary/10'
                                             } `}
@@ -94,6 +108,13 @@ export const LinksTable: React.FC<LinksTableProps> = ({ urls, isLoading, onEdit,
                                         <span className="material-symbols-outlined text-[20px]">
                                             {copiedId === url.id ? 'check' : 'content_copy'}
                                         </span>
+                                    </button>
+                                    <button
+                                        onClick={() => onShowQR(url)}
+                                        className="inline-flex items-center justify-center size-8 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                                        title="Show QR Code"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">qr_code</span>
                                     </button>
                                     <LinkActionMenu
                                         onEdit={() => onEdit(url)}

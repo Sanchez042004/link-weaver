@@ -3,16 +3,58 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useGeneralAnalytics } from '../hooks/useAnalytics';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 
+import Skeleton from '../components/ui/Skeleton';
+
 const GeneralAnalyticsPage: React.FC = () => {
     const { data, loading } = useGeneralAnalytics();
 
     if (loading) {
         return (
             <DashboardLayout>
-                <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
-                    <div className="flex flex-col items-center gap-4">
-                        <span className="material-symbols-outlined text-[40px] animate-spin text-primary">progress_activity</span>
-                        <p className="font-bold">Loading analytics...</p>
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    {/* Header Skeleton */}
+                    <div className="flex flex-col gap-2 mb-8">
+                        <Skeleton className="h-10 w-48 bg-slate-200 dark:bg-slate-800" />
+                        <Skeleton className="h-5 w-72 bg-slate-200 dark:bg-slate-800" />
+                    </div>
+
+                    {/* Stat Cards Grid Skeleton */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex flex-col gap-2 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm h-[130px]">
+                                <div className="flex justify-between items-start">
+                                    <Skeleton className="h-4 w-24 mb-2" />
+                                    <Skeleton className="size-10 rounded-lg" />
+                                </div>
+                                <Skeleton className="h-8 w-16 mt-auto" />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Chart Skeleton */}
+                    <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm p-6 mb-8 h-[360px]">
+                        <Skeleton className="h-6 w-48 mb-6" />
+                        <Skeleton className="w-full h-[250px] rounded-lg" />
+                    </div>
+
+                    {/* Bottom Grids Skeleton */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {[1, 2].map(i => (
+                            <div key={i} className="bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm rounded-xl p-6 h-[280px]">
+                                <Skeleton className="h-6 w-32 mb-6" />
+                                <div className="space-y-4">
+                                    {[1, 2, 3, 4, 5].map(j => (
+                                        <div key={j} className="flex flex-col gap-2">
+                                            <div className="flex justify-between">
+                                                <Skeleton className="h-4 w-24" />
+                                                <Skeleton className="h-4 w-8" />
+                                            </div>
+                                            <Skeleton className="h-2 w-full rounded-full" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </DashboardLayout>
@@ -31,7 +73,7 @@ const GeneralAnalyticsPage: React.FC = () => {
 
     return (
         <DashboardLayout>
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col gap-2 mb-8">
                     <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white">
                         Overview
@@ -52,8 +94,8 @@ const GeneralAnalyticsPage: React.FC = () => {
                     />
                 </div>
 
-                <div className="bg-white dark:bg-[#1e293b] rounded-xl p-6 border border-slate-200 dark:border-[#324467] shadow-sm mb-8">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Clicks Over Time (Last 7 Days)</h3>
+                <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm p-6 mb-8">
+                    <h3 className="text-lg font-bold text-white mb-4">Clicks Over Time (Last 7 Days)</h3>
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={chartData}>
@@ -65,7 +107,7 @@ const GeneralAnalyticsPage: React.FC = () => {
                                 </defs>
                                 <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #324467', borderRadius: '8px', color: '#fff' }}
+                                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#324467', color: '#fff' }}
                                 />
                                 <Area type="monotone" dataKey="clicks" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorClicks)" />
                             </AreaChart>
@@ -91,22 +133,24 @@ const StatCard = ({ title, value, icon, color }: any) => {
     };
 
     return (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl p-6 border border-slate-200 dark:border-[#324467] shadow-sm transition-all hover:shadow-md">
-            <div className="flex items-center justify-between mb-4">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider">{title}</p>
+        <div className="flex flex-col gap-2 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+                <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">{title}</p>
                 <div className={`size-10 flex items-center justify-center rounded-lg ${colorClasses[color]}`}>
                     <span className="material-symbols-outlined text-[24px]">{icon}</span>
                 </div>
             </div>
-            <p className="text-4xl font-black text-slate-900 dark:text-white">{value}</p>
+            <div className="flex items-end gap-3 mt-auto">
+                <p className="text-2xl font-black text-white tracking-tight">{value}</p>
+            </div>
         </div>
     );
 };
 
 const TopList = ({ title, items, type, total }: any) => {
     return (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl p-6 border border-slate-200 dark:border-[#324467] shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">{type === 'country' ? 'public' : 'devices'}</span>
                 {title}
             </h3>
@@ -116,13 +160,13 @@ const TopList = ({ title, items, type, total }: any) => {
                     return (
                         <div key={item.name} className="flex flex-col gap-2">
                             <div className="flex justify-between text-sm font-medium">
-                                <span className="text-slate-900 dark:text-white flex items-center gap-2">
+                                <span className="text-white flex items-center gap-2">
                                     {type === 'country' && item.name !== 'Unknown' && <img src={`https://flagcdn.com/w20/${item.name.toLowerCase()}.png`} className="w-5 h-auto rounded" alt={item.name} />}
                                     {item.name}
                                 </span>
-                                <span className="text-slate-500 dark:text-[#92a4c9]">{percentage}%</span>
+                                <span className="text-slate-400">{percentage}%</span>
                             </div>
-                            <div className="w-full bg-slate-200 dark:bg-[#324467] rounded-full h-2">
+                            <div className="w-full bg-slate-700/50 rounded-full h-2">
                                 <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${percentage}%` }}></div>
                             </div>
                         </div>

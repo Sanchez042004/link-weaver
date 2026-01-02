@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 const Navbar: React.FC = () => {
     return (
@@ -7,17 +8,10 @@ const Navbar: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <div
-                        className="flex-shrink-0 flex items-center gap-3 cursor-pointer"
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    >
-                        <div className="size-10 group flex items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                            </svg>
-                        </div>
-                        <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Knot.ly</span>
-                    </div>
+                    {/* Logo */}
+                    <Link to="/" className="flex-shrink-0 cursor-pointer">
+                        <Logo />
+                    </Link>
 
                     {/* Desktop Nav - Removed as per request */}
                     <div />

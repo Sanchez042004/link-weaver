@@ -11,13 +11,16 @@ interface EditLinkModalProps {
 
 export const EditLinkModal: React.FC<EditLinkModalProps> = ({ isOpen, onClose, onSuccess, link }) => {
     const [longUrl, setLongUrl] = useState(link.longUrl);
-    const [alias, setAlias] = useState(link.customAlias || link.alias || '');
+    const derivedAlias = link.shortUrl ? link.shortUrl.replace(/\/$/, '').split('/').pop() : '';
+    const [alias, setAlias] = useState(derivedAlias || link.customAlias || link.alias || '');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         setLongUrl(link.longUrl);
-        setAlias(link.customAlias || link.alias || '');
+        // Prioritize what is actually live in the shortUrl to avoid sync issues
+        const derivedAlias = link.shortUrl ? link.shortUrl.replace(/\/$/, '').split('/').pop() : '';
+        setAlias(derivedAlias || link.customAlias || link.alias || '');
     }, [link]);
 
     const handleSubmit = async (e: React.FormEvent) => {
