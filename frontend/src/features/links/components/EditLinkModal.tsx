@@ -72,8 +72,19 @@ export const EditLinkModal: React.FC<EditLinkModalProps> = ({ isOpen, onClose, o
                     <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
                         Cancel
                     </button>
-                    <button type="submit" disabled={isLoading} className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50">
-                        {isLoading ? 'Saving...' : 'Save Changes'}
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? (
+                            <>
+                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span>Saving...</span>
+                            </>
+                        ) : (
+                            'Save Changes'
+                        )}
                     </button>
                 </div>
             </form>
