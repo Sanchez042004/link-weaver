@@ -29,7 +29,11 @@ export class RedirectController {
                 res.redirect(urlData.longUrl);
 
                 // Tracking
-                const ip = req.ip || req.socket.remoteAddress || '';
+                // Get real IP from X-Forwarded-For if available, then fallback to req.ip
+                const forwarded = req.headers['x-forwarded-for'];
+                const ip = typeof forwarded === 'string'
+                    ? forwarded.split(',')[0]
+                    : req.ip || req.socket.remoteAddress || '';
                 const userAgent = req.headers['user-agent'] || '';
                 const referer = req.headers['referer'] || '';
 

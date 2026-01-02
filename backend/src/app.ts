@@ -22,9 +22,9 @@ export const app: Application = express();
 
 app.use(helmet());
 
-// Configuración de Proxy (Crítico para Rate Limit y Analytics detrás de Nginx/Cloudflare)
+// Configuración de Proxy (Crítico para Rate Limit y Analytics detrás de Nginx/Cloudflare/Back4App)
 if (env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1);
+    app.set('trust proxy', true);
 }
 
 app.use(
