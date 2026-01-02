@@ -13,8 +13,9 @@ const SignupPage: React.FC = () => {
     const [passwordFocused, setPasswordFocused] = useState(false);
     const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const { register, isLoading } = useAuth();
+    const { register } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,10 +36,13 @@ const SignupPage: React.FC = () => {
             return;
         }
 
+        setIsSubmitting(true);
         try {
             await register(username, email, password);
         } catch (err: any) {
             setError(err.message || 'Registration failed');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -190,10 +194,10 @@ const SignupPage: React.FC = () => {
 
                             <button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isSubmitting}
                                 className="w-full h-12 mt-2 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                             >
-                                {isLoading ? (
+                                {isSubmitting ? (
                                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                 ) : (
                                     "Create Account"

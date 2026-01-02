@@ -8,16 +8,20 @@ const LoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { login, isLoading } = useAuth();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setIsSubmitting(true);
 
         try {
             await login(email, password);
         } catch (err: any) {
             setError(err.message || 'Login failed. Please check your credentials.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -107,10 +111,10 @@ const LoginPage: React.FC = () => {
 
                         <button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={isSubmitting}
                             className="mt-2 w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                         >
-                            {isLoading ? (
+                            {isSubmitting ? (
                                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
                                 "Log In"
