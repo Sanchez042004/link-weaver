@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { env } from '../../../config/env';
 
 const SocialProof: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,7 +65,7 @@ const SocialProof: React.FC = () => {
                 const randomSlug = shortSlugs[Math.floor(Math.random() * shortSlugs.length)];
 
                 this.textLong = randomLong;
-                this.textShort = `${(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/${randomSlug}`;
+                this.textShort = `${env.getShortUrlBaseDisplay()}/${randomSlug}`;
                 this.widthLong = Math.min(320, randomLong.length * 9);
                 this.widthShort = 130;
                 this.widthCurrent = this.widthLong;

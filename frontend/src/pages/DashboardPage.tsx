@@ -3,6 +3,7 @@ import { useLinks } from '../features/links/hooks/useLinks';
 import { useAuth } from '../context/AuthContext';
 import { useGeneralAnalytics } from '../hooks/useAnalytics';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { env } from '../config/env';
 
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import DashboardHeader from '../features/dashboard/components/DashboardHeader';
@@ -192,7 +193,7 @@ const DashboardPage: React.FC = () => {
                 }}
                 onConfirm={handleConfirmDelete}
                 title="Delete Link"
-                message={`This is a permanent action. All analytics data for ${(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/${linkToDelete?.alias} will be permanently lost.`}
+                message={`This is a permanent action. All analytics data for ${env.getShortUrlBaseDisplay()}/${linkToDelete?.alias} will be permanently lost.`}
                 confirmText="Delete Link"
                 type="danger"
                 isLoading={isDeleting}

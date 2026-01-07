@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { urlApi, type Url } from '../../../api/url.api';
 import { Modal } from '../../../components/ui/Modal';
+import { env } from '../../../config/env';
 
 interface EditLinkModalProps {
     isOpen: boolean;
@@ -56,7 +57,7 @@ export const EditLinkModal: React.FC<EditLinkModalProps> = ({ isOpen, onClose, o
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Alias</label>
                     <div className="flex bg-white dark:bg-background-dark rounded-lg border border-slate-300 dark:border-slate-600 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden group">
                         <div className="bg-slate-50 dark:bg-slate-800/40 px-3 flex items-center border-r border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-black leading-none">
-                            {(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/
+                            {env.getShortUrlBaseDisplay()}/
                         </div>
                         <input
                             type="text"
