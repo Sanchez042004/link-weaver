@@ -29,16 +29,18 @@ export class RedirectController {
                 res.redirect(urlData.longUrl);
 
                 // Tracking
-                // Get real IP from X-Forwarded-For if available, then fallback to req.ip
                 const forwarded = req.headers['x-forwarded-for'];
                 const ip = typeof forwarded === 'string'
                     ? forwarded.split(',')[0]
                     : req.ip || req.socket.remoteAddress || '';
-                const userAgent = req.headers['user-agent'] || '';
-                const referer = req.headers['referer'] || '';
+                const userAgent = (req.headers['user-agent'] as string) || '';
+                const referer = (req.headers['referer'] as string) || '';
 
-                // Fire and forget
-                this.analyticsService.trackClick(urlData.id, ip, userAgent, referer)
+                // Extract UTM source for better attribution
+                const utmSource = (req.query.utm_source as string) || '';
+
+                // Fire and forget tracking
+                this.analyticsService.trackClick(urlData.id, ip, userAgent, referer, utmSource)
                     .catch(err => Logger.error('Background tracking error:', err));
 
                 return;

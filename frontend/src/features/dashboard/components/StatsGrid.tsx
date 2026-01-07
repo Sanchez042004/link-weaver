@@ -11,10 +11,11 @@ interface StatsCardProps {
     };
     icon: string;
     colorClass?: string;
+    tooltip?: string;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ title, value, trend, icon, colorClass = 'text-primary' }) => (
-    <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 relative overflow-hidden group hover:border-primary/40 transition-all duration-500 shadow-lg">
+const StatsCard: React.FC<StatsCardProps> = ({ title, value, trend, icon, colorClass = 'text-primary', tooltip }) => (
+    <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 relative group hover:border-primary/40 transition-all duration-500 shadow-lg">
         <div className={`absolute -right-6 -top-6 size-24 ${colorClass.includes('primary') ? 'bg-primary/5' : 'bg-orange-500/5'} rounded-full blur-2xl group-hover:scale-110 transition-all`}></div>
         <div className="flex justify-between items-start mb-4 relative z-10">
             <div className="p-2 bg-surface-highlight rounded-lg flex items-center justify-center">
@@ -27,8 +28,19 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, trend, icon, colorC
                 </span>
             )}
         </div>
-        <p className="text-slate-400 text-base sm:text-sm font-medium relative z-10">{title}</p>
-        <p className="text-white text-3xl font-bold mt-1 font-display relative z-10">{value}</p>
+        <div className="flex items-center gap-1 mb-1 relative z-10">
+            <p className="text-slate-400 text-base sm:text-sm font-medium">{title}</p>
+            {tooltip && (
+                <div className="group/tooltip relative flex items-center">
+                    <span className="material-symbols-outlined text-[14px] opacity-30 cursor-help hover:opacity-100 transition-opacity text-slate-400">info</span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none font-body text-center">
+                        <div className="relative z-10">{tooltip}</div>
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-r border-b border-white/10"></div>
+                    </div>
+                </div>
+            )}
+        </div>
+        <p className="text-white text-3xl font-bold font-display relative z-10">{value}</p>
     </div>
 );
 
@@ -109,14 +121,16 @@ const StatsGrid: React.FC<StatsGridProps> = ({ urls, isLoading, comparison, filt
                 value={totalClicks.toLocaleString()}
                 trend={getClicksTrend()}
                 icon="ads_click"
+                tooltip="Total clicks across all your shortened links"
             />
             <StatsCard
                 title="Active Links"
                 value={urls.length}
                 trend={getLinksTrend()}
                 icon="link"
+                tooltip="Number of shortened links you have created that are currently active"
             />
-            <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 relative overflow-hidden group hover:border-primary/40 transition-all duration-500 shadow-lg">
+            <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 relative group hover:border-primary/40 transition-all duration-500 shadow-lg">
                 <div className="absolute -right-6 -top-6 size-24 bg-orange-500/5 rounded-full blur-2xl group-hover:scale-110 transition-all"></div>
                 <div className="flex justify-between items-start mb-4 relative z-10">
                     <div className="p-2 bg-surface-highlight rounded-lg flex items-center justify-center">
@@ -126,7 +140,16 @@ const StatsGrid: React.FC<StatsGridProps> = ({ urls, isLoading, comparison, filt
                         Top Performer
                     </span>
                 </div>
-                <p className="text-slate-400 text-base sm:text-sm font-medium relative z-10">Most Clicked Link</p>
+                <div className="flex items-center gap-1 mb-1 relative z-10">
+                    <p className="text-slate-400 text-base sm:text-sm font-medium">Most Clicked Link</p>
+                    <div className="group/tooltip relative flex items-center">
+                        <span className="material-symbols-outlined text-[14px] opacity-30 cursor-help hover:opacity-100 transition-opacity text-slate-400">info</span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none font-body">
+                            <div className="relative z-10">The link that has received the most traffic in your account</div>
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-r border-b border-white/10"></div>
+                        </div>
+                    </div>
+                </div>
                 {topPerformer ? (
                     <>
                         <p className="text-white text-xl sm:text-2xl font-bold mt-1 font-display hover:text-primary transition-colors truncate block relative z-10">

@@ -8,7 +8,14 @@ export class UrlRepository {
     }
 
     async findByAlias(alias: string): Promise<Url | null> {
-        return this.prisma.url.findUnique({ where: { alias } });
+        return this.prisma.url.findFirst({
+            where: {
+                alias: {
+                    equals: alias,
+                    mode: 'insensitive'
+                }
+            }
+        });
     }
 
     async findById(id: string): Promise<Url | null> {

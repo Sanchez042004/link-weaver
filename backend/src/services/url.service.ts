@@ -28,7 +28,7 @@ export class UrlService {
         userId?: string,
         customAlias?: string
     ): Promise<Url> {
-        let alias = customAlias;
+        let alias = customAlias?.toLowerCase();
 
         // 1. Verify custom alias availability and reserved words
         if (alias) {
@@ -209,17 +209,19 @@ export class UrlService {
         let alias = url.alias;
 
         // 2. If alias changes, verify availability and reserved words
-        if (newCustomAlias && newCustomAlias !== url.alias) {
+        if (newCustomAlias && newCustomAlias.toLowerCase() !== url.alias.toLowerCase()) {
+            const normalizedAlias = newCustomAlias.toLowerCase();
+
             // Check for reserved keywords
-            if (RESERVED_ALIASES.includes(newCustomAlias.toLowerCase())) {
+            if (RESERVED_ALIASES.includes(normalizedAlias)) {
                 throw new BadRequestError('Este alias está reservado para el sistema');
             }
 
-            const existing = await this.urlRepository.findByAlias(newCustomAlias);
+            const existing = await this.urlRepository.findByAlias(normalizedAlias);
             if (existing) {
                 throw new ConflictError('El alias personalizado ya está en uso');
             }
-            alias = newCustomAlias;
+            alias = normalizedAlias;
         }
 
         // 3. Update

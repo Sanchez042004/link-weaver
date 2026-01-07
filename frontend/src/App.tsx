@@ -12,6 +12,7 @@ import ShortUrlRedirect from './pages/ShortUrlRedirect';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import PublicRoute from './features/auth/components/PublicRoute';
@@ -65,8 +66,14 @@ function App() {
           </ProtectedRoute>
         } />
 
+        {/* Error Pages */}
+        <Route path="/404" element={<NotFoundPage />} />
+
         {/* Catch-all Short URL Redirect */}
         <Route path="/:alias" element={<ShortUrlRedirect />} />
+
+        {/* Catch-all general 404 */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>
   );

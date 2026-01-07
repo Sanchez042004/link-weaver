@@ -128,9 +128,18 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
         : '';
 
     return (
-        <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 flex flex-col w-full overflow-hidden shadow-2xl">
+        <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 flex flex-col w-full shadow-2xl relative">
             <div className="mb-4">
-                <h3 className="text-white text-lg font-bold font-display">{title}</h3>
+                <h3 className="text-white text-lg font-bold font-display flex items-center gap-2">
+                    {title}
+                    <div className="group/tooltip relative flex items-center">
+                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
+                            <div className="relative z-10">Historical trend of clicks over the selected time period</div>
+                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
+                        </div>
+                    </div>
+                </h3>
             </div>
 
             <div className="flex-1 w-full relative min-h-0">

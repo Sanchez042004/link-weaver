@@ -5,7 +5,7 @@ const ShortUrlRedirect: React.FC = () => {
     const { alias } = useParams<{ alias: string }>();
 
     useEffect(() => {
-        if (alias) {
+        if (alias && alias.toLowerCase() !== '404') {
             // Obtener la URL del API desde las variables de entorno
             // Importante: VITE_API_URL termina en /api (ej: ...onrender.com/api)
             // La ruta de redirección en el backend suele estar en la RAÍZ del servidor Express 

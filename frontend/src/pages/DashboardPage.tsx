@@ -83,7 +83,7 @@ const DashboardPage: React.FC = () => {
 
     return (
         <DashboardLayout>
-            <div className="flex-1 flex flex-col h-full overflow-hidden relative font-body">
+            <div className="flex-1 flex flex-col h-full relative font-body">
                 <DashboardHeader />
 
                 {/* Scrollable Content */}

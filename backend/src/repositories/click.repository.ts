@@ -11,13 +11,20 @@ export class ClickRepository {
         return this.prisma.click.count({ where: { urlId } });
     }
 
-    async countByUrlInRange(urlId: string, since: Date): Promise<number> {
-        return this.prisma.click.count({
-            where: {
-                urlId,
-                timestamp: { gte: since }
-            }
-        });
+    async countByUrlInRange(urlId: string, since: Date, until?: Date): Promise<number> {
+        const where: Prisma.ClickWhereInput = {
+            urlId,
+            timestamp: { gte: since }
+        };
+
+        if (until) {
+            where.timestamp = {
+                ...(where.timestamp as any),
+                lte: until
+            };
+        }
+
+        return this.prisma.click.count({ where });
     }
 
     async findLastByUrl(urlId: string): Promise<Click | null> {

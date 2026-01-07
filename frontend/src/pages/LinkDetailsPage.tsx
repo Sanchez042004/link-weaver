@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
 import { useLinkAnalytics } from '../hooks/useAnalytics';
 import { useLinks } from '../features/links/hooks/useLinks';
 import { DashboardLayout } from '../layouts/DashboardLayout';
@@ -13,13 +13,37 @@ import { env } from '../config/env';
 
 const getReferrerInfo = (domain: string) => {
     const d = domain.toLowerCase();
+
+    // UTM Sources
+    if (d.startsWith('utm:')) {
+        const source = d.replace('utm:', '');
+        if (source.includes('mail')) return { type: 'Email', icon: 'mail' };
+        if (source.includes('facebook') || source.includes('fb') || source.includes('ig') || source.includes('instagram')) return { type: 'Social', icon: 'share' };
+        if (source.includes('twitter') || source.includes('x') || source.includes('t.co')) return { type: 'Social', icon: 'flutter_dash' };
+        return { type: 'Campaign', icon: 'campaign' };
+    }
+
     if (d === 'direct') return { type: 'Direct', icon: 'ads_click' };
-    if (d.includes('facebook') || d.includes('fb.me')) return { type: 'Social', icon: 'share' };
+
+    // Social
+    if (d.includes('facebook') || d.includes('fb.me') || d.includes('m.facebook')) return { type: 'Social', icon: 'share' };
     if (d.includes('t.co') || d.includes('twitter') || d.includes('x.com')) return { type: 'Social', icon: 'flutter_dash' };
-    if (d.includes('instagram')) return { type: 'Social', icon: 'camera_alt' };
-    if (d.includes('linkedin')) return { type: 'Social', icon: 'person_add' };
-    if (d.includes('youtube')) return { type: 'Social', icon: 'smart_display' };
-    if (d.includes('google') || d.includes('bing') || d.includes('duckduckgo')) return { type: 'Search', icon: 'search' };
+    if (d.includes('instagram') || d.includes('instagr.am')) return { type: 'Social', icon: 'camera_alt' };
+    if (d.includes('linkedin') || d.includes('lnkd.in')) return { type: 'Social', icon: 'person_add' };
+    if (d.includes('youtube') || d.includes('youtu.be')) return { type: 'Social', icon: 'smart_display' };
+    if (d.includes('tiktok')) return { type: 'Social', icon: 'music_note' };
+    if (d.includes('reddit')) return { type: 'Social', icon: 'forum' };
+    if (d.includes('pinterest')) return { type: 'Social', icon: 'push_pin' };
+
+    // Messaging
+    if (d.includes('whatsapp') || d.includes('wa.me')) return { type: 'Social', icon: 'chat' };
+    if (d.includes('telegram') || d.includes('t.me')) return { type: 'Social', icon: 'send' };
+
+    // Search
+    if (d.includes('google') || d.includes('bing') || d.includes('duckduckgo') || d.includes('yahoo') || d.includes('baidu')) {
+        return { type: 'Search', icon: 'search' };
+    }
+
     return { type: 'Referral', icon: 'link' };
 };
 
@@ -197,20 +221,24 @@ const LinkDetailsPage: React.FC = () => {
                                     title="Total Clicks"
                                     value={data.totalClicks.toLocaleString()}
                                     icon="ads_click"
-                                    trend="+12% vs last week"
-                                    trendIcon="trending_up"
+                                    trend={data.trend?.value}
+                                    trendIcon={data.trend?.isUp ? 'trending_up' : 'trending_down'}
+                                    trendColor={data.trend?.isUp ? 'text-primary' : 'text-red-500'}
+                                    tooltip="Total number of times this link has been accessed"
                                 />
                                 <KPICard
                                     title="Creation Date"
-                                    value={new Date(data.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    icon="calendar_month"
-                                    subtext={`${Math.floor((Date.now() - new Date(data.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days active`}
+                                    value={format(new Date(data.createdAt), 'd MMM yyyy', { locale: undefined })}
+                                    icon="calendar_today"
+                                    subtext={`${differenceInDays(new Date(), new Date(data.createdAt))} days active`}
+                                    tooltip="The date when this link was created and became active"
                                 />
                                 <KPICard
                                     title="Last Click"
                                     value={data.lastAccessed ? formatDistanceToNow(new Date(data.lastAccessed), { addSuffix: true }) : 'Never'}
                                     icon="timer"
-                                    subtext={data.blocks?.countries?.[0] ? `from ${data.blocks.countries[0].name}` : 'No global data'}
+                                    subtext={data.lastAccessed ? `from ${data.recentClickCountry || 'unknown'}` : 'No clicks yet'}
+                                    tooltip="The exact moment when the last access to this link was recorded"
                                 />
                             </>
                         )}
@@ -233,8 +261,15 @@ const LinkDetailsPage: React.FC = () => {
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display">
                                     <span className="material-symbols-outlined text-primary">public</span>
                                     Top Locations
+                                    <div className="group/tooltip relative flex items-center">
+                                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
+                                            <div className="relative z-10">Geographical distribution of your audience by country</div>
+                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
+                                        </div>
+                                    </div>
                                 </h3>
-                                <button className="text-[10px] font-black text-slate-500 dark:text-[#9db9a6] hover:text-primary uppercase tracking-widest font-body">Real-time data</button>
+                                <span className="text-[10px] font-black text-slate-500 dark:text-[#9db9a6] uppercase tracking-widest font-body">Real-time data</span>
                             </div>
                             <div className="flex flex-col gap-5 mt-2">
                                 {loading ? (
@@ -281,8 +316,15 @@ const LinkDetailsPage: React.FC = () => {
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display">
                                     <span className="material-symbols-outlined text-primary">devices</span>
                                     Devices
+                                    <div className="group/tooltip relative flex items-center">
+                                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
+                                            <div className="relative z-10">Comparison between mobile and desktop users</div>
+                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
+                                        </div>
+                                    </div>
                                 </h3>
-                                <button className="text-[10px] font-black text-slate-500 dark:text-[#9db9a6] hover:text-primary uppercase tracking-widest font-body">Details</button>
+                                <span className="text-[10px] font-black text-slate-500 dark:text-[#9db9a6] uppercase tracking-widest font-body">Details</span>
                             </div>
                             {loading ? (
                                 <div className="flex flex-col sm:flex-row items-center gap-8 mt-2 h-full justify-center">
@@ -299,15 +341,121 @@ const LinkDetailsPage: React.FC = () => {
                     </div>
 
                     {/* Referrer Table Section */}
-                    <div className="w-full rounded-xl bg-surface-dark border border-border-dark/40 shadow-sm overflow-hidden font-body">
+                    <div className="w-full rounded-xl bg-surface-dark border border-border-dark/40 shadow-sm font-body relative">
                         <div className="p-6 border-b border-border-dark/40">
                             <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display">
                                 <span className="material-symbols-outlined text-primary">alt_route</span>
                                 Traffic Sources
+                                <div className="group/tooltip relative flex items-center">
+                                    <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
+                                        <div className="relative z-10">List of websites and platforms where users found your link</div>
+                                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
+                                    </div>
+                                </div>
                             </h3>
                         </div>
-                        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-border-dark scrollbar-track-transparent">
-                            <div className="min-w-[600px] w-full">
+
+                        {/* Loading State: Responsive Skeleton */}
+                        {loading && (
+                            <div className="p-0">
+                                {/* Mobile Skeleton */}
+                                <div className="lg:hidden divide-y divide-border-dark/30">
+                                    {Array.from({ length: 3 }).map((_, i) => (
+                                        <div key={i} className="p-5 flex flex-col gap-3">
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-3">
+                                                    <Skeleton className="size-8 rounded-lg" />
+                                                    <Skeleton className="h-4 w-32" />
+                                                </div>
+                                                <Skeleton className="h-5 w-16 rounded-full" />
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <Skeleton className="h-4 w-20" />
+                                                <Skeleton className="h-4 w-12" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Desktop Skeleton */}
+                                <div className="hidden lg:block overflow-x-auto">
+                                    <table className="w-full text-left text-sm text-slate-400">
+                                        <thead className="bg-[#2e1d15]/50 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                                            <tr>
+                                                <th className="px-6 py-4">Source</th>
+                                                <th className="px-6 py-4">Type</th>
+                                                <th className="px-6 py-4">Clicks</th>
+                                                <th className="px-6 py-4">Trend</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border-dark/30">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <tr key={i}>
+                                                    <td className="px-6 py-4"><div className="flex items-center gap-3"><Skeleton className="size-8 rounded-lg" /><Skeleton className="h-4 w-32" /></div></td>
+                                                    <td className="px-6 py-4"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                                                    <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
+                                                    <td className="px-6 py-4"><Skeleton className="h-4 w-12" /></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* No Data State */}
+                        {!loading && (!data.blocks?.referrers || data.blocks.referrers.length === 0) && (
+                            <div className="px-6 py-12 text-center text-slate-500 italic font-body">
+                                <div className="flex flex-col items-center gap-2">
+                                    <span className="material-symbols-outlined text-4xl opacity-20">analytics</span>
+                                    <span>No traffic source data available yet.</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mobile View: Card List (hidden on lg) */}
+                        {!loading && data.blocks?.referrers?.length > 0 && (
+                            <div className="lg:hidden divide-y divide-border-dark/30">
+                                {data.blocks.referrers.slice(0, 8).map((ref: any) => {
+                                    const { type, icon } = getReferrerInfo(ref.name);
+                                    return (
+                                        <div key={ref.name} className="p-5 flex flex-col gap-3 hover:bg-primary/5 transition-colors group">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="size-8 rounded-lg bg-surface-dark flex items-center justify-center border border-border-dark/30 group-hover:border-primary/30 transition-colors">
+                                                        <span className="material-symbols-outlined text-[18px] text-primary">{icon}</span>
+                                                    </div>
+                                                    <span className="font-bold text-white text-sm truncate max-w-[150px]">{ref.name}</span>
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${type === 'Social' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                    type === 'Search' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                        type === 'Direct' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                                                            'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                                    }`}>
+                                                    {type}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <div className="flex items-center gap-1 font-black text-white">
+                                                    {ref.value.toLocaleString()}
+                                                    <span className="text-[10px] text-slate-500 font-normal">clics</span>
+                                                </div>
+                                                <div className={`flex items-center gap-1 font-bold text-xs ${ref.trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                    <span className="material-symbols-outlined text-[14px]">
+                                                        {ref.trend >= 0 ? 'trending_up' : 'trending_down'}
+                                                    </span>
+                                                    <span>{Math.abs(ref.trend)}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Desktop View: Traditional Table (hidden below lg) */}
+                        {!loading && data.blocks?.referrers?.length > 0 && (
+                            <div className="hidden lg:block overflow-x-auto scrollbar-thin scrollbar-thumb-border-dark scrollbar-track-transparent">
                                 <table className="w-full text-left text-sm text-slate-400 dark:text-[#9db9a6]">
                                     <thead className="bg-[#2e1d15]/50 text-[10px] uppercase font-black tracking-widest text-slate-400 dark:text-[#8a6350]">
                                         <tr>
@@ -318,64 +466,44 @@ const LinkDetailsPage: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border-dark/30">
-                                        {loading ? (
-                                            Array.from({ length: 5 }).map((_, i) => (
-                                                <tr key={i}>
-                                                    <td className="px-6 py-4"><div className="flex items-center gap-3"><Skeleton className="size-8 rounded-lg" /><Skeleton className="h-4 w-32" /></div></td>
-                                                    <td className="px-6 py-4"><Skeleton className="h-5 w-20 rounded-full" /></td>
-                                                    <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
-                                                    <td className="px-6 py-4"><Skeleton className="h-4 w-12" /></td>
-                                                </tr>
-                                            ))
-                                        ) : data.blocks?.referrers?.length > 0 ? (
-                                            data.blocks.referrers.slice(0, 8).map((ref: any) => {
-                                                const { type, icon } = getReferrerInfo(ref.name);
-                                                return (
-                                                    <tr key={ref.name} className="hover:bg-primary/5 transition-colors group">
-                                                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                                                            <div className="size-8 rounded-lg bg-surface-dark flex items-center justify-center border border-border-dark/30 group-hover:border-primary/30 transition-colors">
-                                                                <span className="material-symbols-outlined text-[18px] text-primary">{icon}</span>
-                                                            </div>
-                                                            <span className="truncate max-w-[150px] md:max-w-none">{ref.name}</span>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${type === 'Social' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                                type === 'Search' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                                    type === 'Direct' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                                                                        'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                                                                }`}>
-                                                                {type}
+                                        {data.blocks.referrers.slice(0, 8).map((ref: any) => {
+                                            const { type, icon } = getReferrerInfo(ref.name);
+                                            return (
+                                                <tr key={ref.name} className="hover:bg-primary/5 transition-colors group">
+                                                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                                                        <div className="size-8 rounded-lg bg-surface-dark flex items-center justify-center border border-border-dark/30 group-hover:border-primary/30 transition-colors">
+                                                            <span className="material-symbols-outlined text-[18px] text-primary">{icon}</span>
+                                                        </div>
+                                                        <span className="truncate">{ref.name}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${type === 'Social' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                            type === 'Search' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                                type === 'Direct' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                                                                    'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                                            }`}>
+                                                            {type}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 font-black text-slate-900 dark:text-white">
+                                                        {ref.value.toLocaleString()}
+                                                        <span className="ml-2 text-[10px] text-slate-500 dark:text-[#586e60] font-normal">clics</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className={`flex items-center gap-1 font-bold text-xs ${ref.trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                            <span className="material-symbols-outlined text-[14px]">
+                                                                {ref.trend >= 0 ? 'trending_up' : 'trending_down'}
                                                             </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 font-black text-slate-900 dark:text-white">
-                                                            {ref.value.toLocaleString()}
-                                                            <span className="ml-2 text-[10px] text-slate-500 dark:text-[#586e60] font-normal">clics</span>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className={`flex items-center gap-1 font-bold text-xs ${ref.trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                                <span className="material-symbols-outlined text-[14px]">
-                                                                    {ref.trend >= 0 ? 'trending_up' : 'trending_down'}
-                                                                </span>
-                                                                <span>{Math.abs(ref.trend)}%</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={4} className="px-6 py-12 text-center text-slate-500 italic font-body">
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <span className="material-symbols-outlined text-4xl opacity-20">analytics</span>
-                                                        <span>No traffic source data available yet.</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
+                                                            <span>{Math.abs(ref.trend)}%</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Danger Zone */}
@@ -406,19 +534,27 @@ const LinkDetailsPage: React.FC = () => {
     );
 };
 
-const KPICard = ({ title, value, icon, trend, trendIcon, subtext }: any) => (
-    <div className="group relative overflow-hidden rounded-xl bg-surface-dark p-6 border border-border-dark/40 shadow-sm hover:shadow-md transition-all">
+const KPICard = ({ title, value, icon, trend, trendIcon, trendColor, subtext, tooltip }: any) => (
+    <div className="group relative rounded-xl bg-surface-dark p-6 border border-border-dark/40 shadow-sm hover:shadow-md transition-all">
         <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
             <span className="material-symbols-outlined text-7xl text-primary">{icon}</span>
         </div>
         <div className="flex flex-col gap-2 relative z-10">
-            <p className="text-slate-500 dark:text-[#9db9a6] text-sm font-medium flex items-center gap-1 font-body">
-                {title}
-                <span className="material-symbols-outlined text-[16px] opacity-40">info</span>
-            </p>
+            <div className="text-slate-500 dark:text-[#9db9a6] text-sm font-medium flex items-center gap-1 font-body">
+                <span>{title}</span>
+                {tooltip && (
+                    <div className="group/tooltip relative flex items-center">
+                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                            <div className="relative z-10">{tooltip}</div>
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-r border-b border-white/10"></div>
+                        </div>
+                    </div>
+                )}
+            </div>
             <p className="text-slate-900 dark:text-white text-3xl font-bold tracking-tight font-display">{value}</p>
             {trend && (
-                <div className="flex items-center gap-1 text-primary text-xs font-bold mt-1 font-body">
+                <div className={`flex items-center gap-1 text-xs font-bold mt-1 font-body ${trendColor || 'text-primary'}`}>
                     <span className="material-symbols-outlined text-[16px]">{trendIcon}</span>
                     <span>{trend}</span>
                 </div>
@@ -437,6 +573,11 @@ const DeviceSection = ({ items, total }: any) => {
     const isMobileLeading = mobileValue >= desktopValue && mobileValue > 0;
     const isDesktopLeading = desktopValue > mobileValue;
 
+    // Completed tooltip tasks:
+    // - [x] Implement Functional Tooltips
+    // - [x] Update `KPICard` and `StatsCard` to support tooltips
+    // - [x] Design CSS tooltip with micro-animations
+    // - [x] Add metric descriptions in all dashboard components
     const devices = [
         {
             name: 'Mobile',

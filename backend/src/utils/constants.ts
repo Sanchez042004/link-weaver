@@ -15,6 +15,7 @@ export const RESERVED_ALIASES = [
     'forgot-password',
     'reset-password',
     'logout',
+    '404',
     'home',
     'profile',
     'admin',

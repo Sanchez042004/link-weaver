@@ -18,7 +18,8 @@ export class AnalyticsService {
         urlId: string,
         ip: string,
         userAgentString: string = '',
-        referer: string = ''
+        referer: string = '',
+        utmSource: string = ''
     ): Promise<void> {
         try {
             // 1. User Agent Parser
@@ -37,16 +38,33 @@ export class AnalyticsService {
             const geo = geoip.lookup(lookupIp);
             const country = geo ? geo.country : 'Unknown';
 
-            Logger.info(`[Analytics] Click tracked: IP=${ip} (${lookupIp}), Country=${country}`);
+            // 3. Determine Source
+            let finalSource = 'Direct';
 
-            // 3. Save to DB via Repository
+            if (utmSource) {
+                // If user provided utm_source, use it (prefix to distinguish)
+                finalSource = `utm:${utmSource.toLowerCase()}`;
+            } else if (referer) {
+                try {
+                    // Normalize referer to hostname (e.g. google.com instead of long search URL)
+                    const url = new URL(referer);
+                    finalSource = url.hostname.replace('www.', '');
+                } catch {
+                    // Fallback to raw referer if not a valid URL
+                    finalSource = referer.length > 50 ? referer.substring(0, 47) + '...' : referer;
+                }
+            }
+
+            Logger.info(`[Analytics] Click tracked: IP=${ip}, Source=${finalSource}, Country=${country}`);
+
+            // 4. Save to DB via Repository
             await this.clickRepository.create({
                 url: { connect: { id: urlId } },
                 timestamp: new Date(),
                 ipAddress: null, // Privacy
                 userAgent: userAgentString,
                 country,
-                referer: referer || 'Direct',
+                referer: finalSource,
                 browser,
                 os,
                 device,
@@ -78,6 +96,7 @@ export class AnalyticsService {
         // Parallel execution for performance
         const [
             totalClicks,
+            previousTotalClicks,
             countries,
             browsers,
             os,
@@ -88,6 +107,7 @@ export class AnalyticsService {
             referrersPrevious
         ] = await Promise.all([
             this.clickRepository.countByUrlInRange(urlId, startDate),
+            days === 0 ? Promise.resolve(0) : this.clickRepository.countByUrlInRange(urlId, previousStartDate, startDate),
             this.clickRepository.groupByCountry(urlId, startDate),
             this.clickRepository.groupByBrowser(urlId, startDate),
             this.clickRepository.groupByOS(urlId, startDate),
@@ -98,9 +118,28 @@ export class AnalyticsService {
             this.clickRepository.groupByReferer(urlId, previousStartDate, startDate)
         ]);
 
+        // Calculate Trend
+        let trend = 0;
+        let trendText = '';
+        if (days !== 0) {
+            if (previousTotalClicks === 0) {
+                trend = totalClicks > 0 ? 100 : 0;
+                trendText = totalClicks > 0 ? `+${totalClicks} New` : 'No growth';
+            } else {
+                trend = Math.round(((totalClicks - previousTotalClicks) / previousTotalClicks) * 100);
+                trendText = `${trend >= 0 ? '+' : ''}${trend}% vs previous period`;
+            }
+        }
+
         return {
             totalClicks,
             lastAccessed: lastClick?.timestamp || null,
+            recentClickCountry: lastClick?.country || null,
+            trend: days === 0 ? null : {
+                value: trendText,
+                isUp: trend >= 0,
+                percentage: trend
+            },
             blocks: {
                 countries: countries.map((c: any) => ({ name: c.country || 'Unknown', value: c._count.country })),
                 browsers: browsers.map((b: any) => ({ name: b.browser || 'Other', value: b._count.browser })),
