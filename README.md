@@ -72,5 +72,3 @@ knot.ly/
 [GitHub](https://github.com/Sanchez042004) | [LinkedIn](https://www.linkedin.com/in/andres-sanchez04/)
 
 ---
-> [!NOTE]
-> Este proyecto fue construido con el objetivo de demostrar habilidades técnicas en el stack (PostgreSQL, Express, React, Node).
