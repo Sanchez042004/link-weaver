@@ -6,6 +6,15 @@ body {
     font-family: "Space Grotesk", sans-serif;
 }
 
+/* Desactivar selección para todos los iconos */
+svg,
+.material-symbols-outlined {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 /* Abstract topographic/network background pattern from Design */
 .bg-pattern {
     background-color: #221610;
