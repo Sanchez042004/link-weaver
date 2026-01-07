@@ -85,9 +85,21 @@ const envSchema = z.object({
         .refine((val) => val >= 1 && val <= 1024, 'MACHINE_ID debe estar entre 1 y 1024'),
 
     // SMTP User for emails
-    SMTP_USER: z.string().email().optional(),
+    SMTP_USER: z
+        .string()
+        .email('SMTP_USER debe ser un correo válido')
+        .optional()
+        .or(z.string().length(0).optional()),
     // SMTP Password for emails
     SMTP_PASS: z.string().optional(),
+}).refine((data) => {
+    if (data.NODE_ENV === 'production') {
+        return !!data.SMTP_USER && !!data.SMTP_PASS;
+    }
+    return true;
+}, {
+    message: 'SMTP_USER y SMTP_PASS son obligatorios en producción para el envío de correos',
+    path: ['SMTP_USER'],
 });
 
 /**

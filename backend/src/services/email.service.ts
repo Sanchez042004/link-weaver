@@ -7,7 +7,7 @@ import { env } from '../config/env';
 export class EmailService {
     private transporter: nodemailer.Transporter | null = null;
     private readonly FROM_EMAIL = env.SMTP_USER;
-    private readonly FRONTEND_URL = env.FRONTEND_URL || 'http://localhost:3000';
+    private readonly FRONTEND_URL = (env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
 
     constructor() {
         if (env.SMTP_USER && env.SMTP_PASS) {
@@ -37,7 +37,7 @@ export class EmailService {
         const verificationUrl = `${this.FRONTEND_URL}/verify-email?token=${token}`;
 
         try {
-            await this.transporter.sendMail({
+            const info = await this.transporter.sendMail({
                 from: `"Knot.ly" <${this.FROM_EMAIL}>`,
                 to: email,
                 subject: 'Verifica tu cuenta en Knot.ly',
@@ -55,9 +55,9 @@ export class EmailService {
                     </div>
                 `,
             });
-            console.log('✅ Email de verificación enviado con éxito.');
+            console.log(`✅ Email de verificación enviado con éxito a ${email}. ID: ${info.messageId}`);
         } catch (error) {
-            console.error('❌ Error enviando email de verificación:', error);
+            console.error(`❌ Error enviando email de verificación a ${email}:`, error);
         }
     }
 
@@ -74,7 +74,7 @@ export class EmailService {
         const resetUrl = `${this.FRONTEND_URL}/reset-password?token=${token}`;
 
         try {
-            await this.transporter.sendMail({
+            const info = await this.transporter.sendMail({
                 from: `"Knot.ly" <${this.FROM_EMAIL}>`,
                 to: email,
                 subject: 'Restablece tu contraseña en Knot.ly',
@@ -93,9 +93,10 @@ export class EmailService {
                     </div>
                 `,
             });
-            console.log('✅ Email de recuperación enviado con éxito.');
+            console.log(`✅ Email de recuperación enviado con éxito a ${email}. ID: ${info.messageId}`);
         } catch (error) {
-            console.error('❌ Error enviando email de recuperación:', error);
+            console.error(`❌ Error enviando email de recuperación a ${email}:`, error);
+            // No lanzamos el error para no bloquear el flujo principal, pero lo registramos
         }
     }
 }

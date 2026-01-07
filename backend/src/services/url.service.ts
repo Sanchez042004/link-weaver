@@ -2,7 +2,8 @@ import { nanoid } from 'nanoid';
 import { Url } from '@prisma/client';
 import { UrlRepository } from '@/repositories/url.repository';
 import { CacheService } from '@/services/cache.service';
-import { ConflictError, NotFoundError, ForbiddenError } from '@/errors';
+import { ConflictError, NotFoundError, ForbiddenError, BadRequestError } from '@/errors';
+import { RESERVED_ALIASES } from '@/utils/constants';
 
 import { ClickRepository } from '@/repositories/click.repository';
 
@@ -29,8 +30,13 @@ export class UrlService {
     ): Promise<Url> {
         let alias = customAlias;
 
-        // 1. Verify custom alias availability
+        // 1. Verify custom alias availability and reserved words
         if (alias) {
+            // Check for reserved keywords
+            if (RESERVED_ALIASES.includes(alias.toLowerCase())) {
+                throw new BadRequestError('Este alias está reservado para el sistema');
+            }
+
             const existing = await this.urlRepository.findByAlias(alias);
             if (existing) {
                 throw new ConflictError('El alias personalizado ya está en uso');
@@ -202,8 +208,13 @@ export class UrlService {
 
         let alias = url.alias;
 
-        // 2. If alias changes, verify availability
+        // 2. If alias changes, verify availability and reserved words
         if (newCustomAlias && newCustomAlias !== url.alias) {
+            // Check for reserved keywords
+            if (RESERVED_ALIASES.includes(newCustomAlias.toLowerCase())) {
+                throw new BadRequestError('Este alias está reservado para el sistema');
+            }
+
             const existing = await this.urlRepository.findByAlias(newCustomAlias);
             if (existing) {
                 throw new ConflictError('El alias personalizado ya está en uso');

@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { env } from '@/config/env';
 import { JwtPayload, AuthResponse } from '@/types/auth.types';
 import { UserRepository } from '@/repositories/user.repository';
-import { ConflictError, UnauthorizedError, BadRequestError, NotFoundError } from '@/errors';
+import { ConflictError, UnauthorizedError, BadRequestError } from '@/errors';
 import { emailService } from './email.service';
 
 export class AuthService {
@@ -25,7 +25,20 @@ export class AuthService {
         const existingUser = await this.userRepository.findByEmail(normalizedEmail);
 
         if (existingUser) {
-            throw new ConflictError('El usuario ya existe');
+            // Si el usuario ya está verificado, no permitimos re-registro
+            if (existingUser.isVerified) {
+                throw new ConflictError('El usuario ya existe');
+            }
+
+            // Si el usuario NO está verificado, verificamos si su token de registro expiró
+            if (existingUser.verificationTokenExpires && existingUser.verificationTokenExpires < new Date()) {
+                // El token expiró, eliminamos el registro anterior para permitir la nueva creación
+                console.log(`🗑️ Eliminando usuario no verificado con token expirado: ${normalizedEmail}`);
+                await this.userRepository.delete(existingUser.id);
+            } else {
+                // El usuario existe, no está verificado pero el token aún es válido
+                throw new ConflictError('Ya existe una cuenta pendiente de verificación con este email');
+            }
         }
 
         // Hash password
@@ -91,10 +104,11 @@ export class AuthService {
         }
 
         // Check if verified
-        if (!user.isVerified && env.NODE_ENV === 'production') {
-            // En desarrollo permitimos entrar sin verificar para facilitar pruebas, 
-            // pero podríamos ser más estrictos si se prefiere.
-            // throw new UnauthorizedError('Por favor verifica tu email antes de iniciar sesión');
+        if (!user.isVerified) {
+            // En desarrollo podríamos ser más flexibles, pero el usuario pidió implementarlo
+            // así que lo activamos para todos los entornos o según NODE_ENV.
+            // Para cumplir con lo solicitado:
+            throw new UnauthorizedError('Por favor verifica tu email antes de iniciar sesión');
         }
 
         // Generate token
@@ -124,7 +138,7 @@ export class AuthService {
         }
 
         if (user.verificationTokenExpires && user.verificationTokenExpires < new Date()) {
-            throw new BadRequestError('El token de verificación ha expirado');
+            throw new BadRequestError('El token de verificación ha expirado. Por favor, crea tu cuenta de nuevo.');
         }
 
         await this.userRepository.update(user.id, {
