@@ -69,7 +69,7 @@ knot.ly/
 **Andrés Sánchez**  
 *Ingeniero de Sistemas, Desarrollador y Analista de Datos*
 
-[GitHub](https://github.com/Sanchez042004) | [LinkedIn](https://www.linkedin.com/in/asanchez04/)
+[GitHub](https://github.com/Sanchez042004) | [LinkedIn](https://www.linkedin.com/in/andres-sanchez04/)
 
 ---
 > [!NOTE]
