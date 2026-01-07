@@ -1,19 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { z } from 'zod';
 import { UrlService } from '@/services/url.service';
-import { env } from '@/config/env';
-import { BadRequestError } from '@/errors';
 
-// Schema para acortar URL
-const shortenUrlSchema = z.object({
-    longUrl: z.string().url('La URL proporcionada no es válida').max(2048, 'La URL es demasiado larga').regex(/^https?:\/\//, 'La URL debe comenzar con http:// o https://'),
-    customAlias: z
-        .string()
-        .min(3, 'El alias debe tener al menos 3 caracteres')
-        .max(20, 'El alias no puede tener más de 20 caracteres')
-        .regex(/^[a-zA-Z0-9-_]+$/, 'El alias solo puede contener letras, números, guiones y guiones bajos')
-        .optional(),
-});
+import { toUrlResponse } from '@/utils/url.response';
 
 export class UrlController {
     constructor(private readonly urlService: UrlService) { }
@@ -23,38 +11,26 @@ export class UrlController {
      */
     public createShortUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // 1. Validar input
-            const validation = shortenUrlSchema.safeParse(req.body);
+            // Data validated by middleware
+            const { longUrl, customAlias } = req.body;
 
-            if (!validation.success) {
-                // Formatting Zod errors
-                const errorMessage = validation.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
-                throw new BadRequestError(errorMessage);
-            }
-
-            const data = validation.data;
-
-            // 2. Obtener usuario (si existe)
+            // 1. Obtener usuario (si existe)
             const userId = req.user?.userId;
 
-            // 3. Llamar al servicio
+            // 2. Llamar al servicio
             const urlRecord = await this.urlService.shortenUrl(
-                data.longUrl,
+                longUrl,
                 userId,
-                data.customAlias
+                customAlias
             );
 
-            // 4. Construir respuesta
-            const baseUrl = env.BASE_URL || `http://localhost:${env.PORT}`;
-            const shortUrl = `${baseUrl}/${urlRecord.alias}`;
+            // 3. Construir respuesta
+            const response = toUrlResponse(urlRecord);
 
             res.status(201).json({
                 success: true,
                 message: 'URL acortada exitosamente',
-                data: {
-                    ...urlRecord,
-                    shortUrl,
-                },
+                data: response,
             });
 
         } catch (error) {
@@ -73,12 +49,8 @@ export class UrlController {
 
             const result = await this.urlService.getUserUrls(userId, page, limit);
 
-            // Añadir shortUrl a cada item
-            const baseUrl = env.BASE_URL || `http://localhost:${env.PORT}`;
-            const enrichedData = result.data.map((u: any) => ({
-                ...u,
-                shortUrl: `${baseUrl}/${u.alias}`,
-            }));
+            // Añadir shortUrl a cada item usando DTO
+            const enrichedData = result.data.map((u: any) => toUrlResponse(u));
 
             res.status(200).json({
                 success: true,
@@ -117,11 +89,6 @@ export class UrlController {
             const { id } = req.params;
             const userId = req.user!.userId;
             const { longUrl, customAlias } = req.body;
-
-            // Validaciones básicas 
-            if (longUrl && !longUrl.startsWith('http')) {
-                throw new BadRequestError('La URL debe ser válida (http/https)');
-            }
 
             const updatedUrl = await this.urlService.updateUrl(id, userId, longUrl, customAlias);
 

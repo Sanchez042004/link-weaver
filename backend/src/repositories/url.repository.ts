@@ -15,6 +15,12 @@ export class UrlRepository {
         return this.prisma.url.findUnique({ where: { id } });
     }
 
+    async findByIds(ids: string[]): Promise<Url[]> {
+        return this.prisma.url.findMany({
+            where: { id: { in: ids } }
+        });
+    }
+
     async findByUser(userId: string, skip: number, limit: number): Promise<[Url[], number]> {
         return Promise.all([
             this.prisma.url.findMany({
@@ -52,6 +58,18 @@ export class UrlRepository {
                 longUrl: true,
                 _count: {
                     select: { clicks: true }
+                }
+            }
+        });
+    }
+
+    async countByUserInRange(userId: string, start: Date, end: Date): Promise<number> {
+        return this.prisma.url.count({
+            where: {
+                userId,
+                createdAt: {
+                    gte: start,
+                    lte: end
                 }
             }
         });

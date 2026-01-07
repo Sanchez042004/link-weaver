@@ -2,11 +2,23 @@ import React from 'react';
 
 interface SkeletonProps {
     className?: string;
+    width?: string | number;
+    height?: string | number;
+    circle?: boolean;
 }
 
-const Skeleton: React.FC<SkeletonProps> = ({ className = '' }) => {
+const Skeleton: React.FC<SkeletonProps> = ({ className = '', width, height, circle }) => {
+    const style: React.CSSProperties = {
+        width: width,
+        height: height,
+        borderRadius: circle ? '50%' : undefined
+    };
+
     return (
-        <div className={`animate-pulse bg-slate-200 dark:bg-slate-700/50 rounded-md ${className}`} />
+        <div
+            className={`skeleton-base ${className}`}
+            style={style}
+        />
     );
 };
 

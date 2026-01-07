@@ -1,14 +1,22 @@
 import { nanoid } from 'nanoid';
 import { Url } from '@prisma/client';
 import { UrlRepository } from '@/repositories/url.repository';
-import { RedisClient } from '@/config/redis'; // Importing the class type
-import { Logger } from '@/config/logger';
+import { CacheService } from '@/services/cache.service';
 import { ConflictError, NotFoundError, ForbiddenError } from '@/errors';
+
+import { ClickRepository } from '@/repositories/click.repository';
+
+interface CachedUrlData {
+    id: string;
+    longUrl: string;
+    expiresAt: Date | null;
+}
 
 export class UrlService {
     constructor(
         private readonly urlRepository: UrlRepository,
-        private readonly redisClient: RedisClient
+        private readonly clickRepository: ClickRepository,
+        private readonly cacheService: CacheService
     ) { }
 
     /**
@@ -68,29 +76,22 @@ export class UrlService {
      * Returns { id, longUrl } for redirection and analytics
      */
     public async getUrlData(alias: string): Promise<{ id: string; longUrl: string; expiresAt: Date | null } | null> {
-        const client = this.redisClient.getClient();
         const cacheKey = `url:${alias}`;
 
-        // 1. Try to get from Redis
-        try {
-            if (this.redisClient.isReady()) {
-                const cached = await client.get(cacheKey);
-                if (cached) {
-                    const parsed = JSON.parse(cached);
-                    // Hydrate dates
-                    if (parsed.expiresAt) {
-                        parsed.expiresAt = new Date(parsed.expiresAt);
-                    }
+        // 1. Try to get from Cache
+        const cached = await this.cacheService.get<CachedUrlData>(cacheKey);
 
-                    // VALIDATE EXPIRATION (Redis Cache)
-                    if (parsed.expiresAt && new Date() > parsed.expiresAt) {
-                        return null;
-                    }
-                    return parsed;
-                }
+        if (cached) {
+            // Hydrate dates (JSON serialization turns dates to strings)
+            if (cached.expiresAt) {
+                cached.expiresAt = new Date(cached.expiresAt);
             }
-        } catch (error) {
-            Logger.warn('⚠️ Error reading from Redis:', error);
+
+            // VALIDATE EXPIRATION (Cache)
+            if (cached.expiresAt && new Date() > cached.expiresAt) {
+                return null;
+            }
+            return cached;
         }
 
         // 2. Search in DB
@@ -105,20 +106,13 @@ export class UrlService {
             return null;
         }
 
-        // 3. Save to Redis
-        try {
-            if (this.redisClient.isReady()) {
-                // Cache only necessary fields to save memory
-                const cacheData = {
-                    id: url.id,
-                    longUrl: url.longUrl,
-                    expiresAt: url.expiresAt
-                };
-                await client.set(cacheKey, JSON.stringify(cacheData), { EX: 86400 });
-            }
-        } catch (error) {
-            Logger.warn('⚠️ Error writing to Redis:', error);
-        }
+        // 3. Save to Cache
+        const cacheData: CachedUrlData = {
+            id: url.id,
+            longUrl: url.longUrl,
+            expiresAt: url.expiresAt
+        };
+        await this.cacheService.set(cacheKey, cacheData, 86400);
 
         return url;
     }
@@ -130,10 +124,30 @@ export class UrlService {
         const skip = (page - 1) * limit;
         const [urls, total] = await this.urlRepository.findByUser(userId, skip, limit);
 
+        // Fetch recent clicks for these URLs to build individual sparklines
+        const urlIds = urls.map(u => u.id);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        // Optimized aggregation using DB GroupBy
+        const dailyClicks = await this.clickRepository.findDailyClicksBatch(urlIds, sevenDaysAgo);
+
+        // Process clicks into timelines per URL
+        const timelines: Record<string, Record<string, number>> = {};
+
+        // Initialize timeline structure
+        urlIds.forEach(id => timelines[id] = {});
+
+        // Fill with aggregated data from DB
+        dailyClicks.forEach(item => {
+            timelines[item.urlId][item.date] = item.count;
+        });
+
         return {
             data: urls.map((url: any) => ({
                 ...url,
                 clicks: url._count.clicks,
+                timeline: timelines[url.id] || {}
             })),
             meta: {
                 total,
@@ -162,10 +176,8 @@ export class UrlService {
         // 2. Delete
         await this.urlRepository.delete(urlId);
 
-        // 3. Invalidate Redis Cache
-        if (this.redisClient.isReady()) {
-            await this.redisClient.getClient().del(`url:${url.alias}`);
-        }
+        // 3. Invalidate Cache
+        await this.cacheService.delete(`url:${url.alias}`);
     }
 
     /**
@@ -206,12 +218,10 @@ export class UrlService {
             customAlias: !!newCustomAlias || url.customAlias,
         });
 
-        // 4. Invalidate Redis Cache
-        if (this.redisClient.isReady()) {
-            await this.redisClient.getClient().del(`url:${url.alias}`);
-            if (alias !== url.alias) {
-                await this.redisClient.getClient().del(`url:${alias}`);
-            }
+        // 4. Invalidate Cache
+        await this.cacheService.delete(`url:${url.alias}`);
+        if (alias !== url.alias) {
+            await this.cacheService.delete(`url:${alias}`);
         }
 
         return updatedUrl;

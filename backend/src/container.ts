@@ -1,15 +1,19 @@
 import { prisma } from '@/config/database';
 import { redisClient } from '@/config/redis';
 
+// Repositories
 import { UrlRepository } from '@/repositories/url.repository';
 import { ClickRepository } from '@/repositories/click.repository';
 import { UserRepository } from '@/repositories/user.repository';
 
+// Services
 import { UrlService } from '@/services/url.service';
 import { AnalyticsService } from '@/services/analytics.service';
 import { UserService } from '@/services/user.service';
 import { AuthService } from '@/services/auth.service';
+import { CacheService } from '@/services/cache.service';
 
+// Controllers
 import { UrlController } from '@/controllers/url.controller';
 import { RedirectController } from '@/controllers/redirect.controller';
 import { AnalyticsController } from '@/controllers/analytics.controller';
@@ -22,7 +26,8 @@ const clickRepository = new ClickRepository(prisma);
 const userRepository = new UserRepository(prisma);
 
 // Services
-const urlService = new UrlService(urlRepository, redisClient);
+const cacheService = new CacheService(redisClient);
+const urlService = new UrlService(urlRepository, clickRepository, cacheService);
 const analyticsService = new AnalyticsService(clickRepository, urlRepository);
 const userService = new UserService(userRepository);
 const authService = new AuthService(userRepository);

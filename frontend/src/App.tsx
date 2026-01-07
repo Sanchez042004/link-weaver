@@ -3,11 +3,11 @@ import { AuthProvider } from './context/AuthContext';
 
 import DashboardPage from './pages/DashboardPage';
 import LinkDetailsPage from './pages/LinkDetailsPage';
-import GeneralAnalyticsPage from './pages/GeneralAnalyticsPage';
 import FeaturesPage from './pages/FeaturesPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import SettingsPage from './pages/SettingsPage';
 import ShortUrlRedirect from './pages/ShortUrlRedirect';
 
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
@@ -17,7 +17,11 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        } />
         <Route path="/features" element={<FeaturesPage />} />
         <Route path="/login" element={
           <PublicRoute>
@@ -36,14 +40,14 @@ function App() {
             <DashboardPage />
           </ProtectedRoute>
         } />
-        <Route path="/analytics" element={
-          <ProtectedRoute>
-            <GeneralAnalyticsPage />
-          </ProtectedRoute>
-        } />
         <Route path="/analytics/:alias" element={
           <ProtectedRoute>
             <LinkDetailsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         } />
 

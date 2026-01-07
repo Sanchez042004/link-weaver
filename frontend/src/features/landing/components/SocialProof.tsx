@@ -64,7 +64,7 @@ const SocialProof: React.FC = () => {
                 const randomSlug = shortSlugs[Math.floor(Math.random() * shortSlugs.length)];
 
                 this.textLong = randomLong;
-                this.textShort = `knot.ly/${randomSlug}`;
+                this.textShort = `${(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/${randomSlug}`;
                 this.widthLong = Math.min(320, randomLong.length * 9);
                 this.widthShort = 130;
                 this.widthCurrent = this.widthLong;
@@ -257,7 +257,7 @@ const SocialProof: React.FC = () => {
                 <div className="mb-20">
                     <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">Streamline Your Links</h2>
                     <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-                        In goes the clutter, out comes clarity. Watch how Knot.ly transforms your digital presence in real-time.
+                        In goes the clutter, out comes clarity. Watch how our platform transforms your digital presence in real-time.
                     </p>
                 </div>
 

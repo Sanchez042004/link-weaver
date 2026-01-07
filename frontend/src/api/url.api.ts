@@ -10,6 +10,7 @@ export interface Url {
     userId?: string | null;
     createdAt: string;
     clicks: number;
+    timeline?: Record<string, number>;
 }
 
 interface GetUrlsResponse {

@@ -54,12 +54,17 @@ export const EditLinkModal: React.FC<EditLinkModalProps> = ({ isOpen, onClose, o
 
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Alias</label>
-                    <input
-                        type="text"
-                        className="form-input w-full p-2 h-11 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-background-dark text-slate-900 dark:text-white"
-                        value={alias}
-                        onChange={(e) => setAlias(e.target.value)}
-                    />
+                    <div className="flex bg-white dark:bg-background-dark rounded-lg border border-slate-300 dark:border-slate-600 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden group">
+                        <div className="bg-slate-50 dark:bg-slate-800/40 px-3 flex items-center border-r border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-black leading-none">
+                            {(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/
+                        </div>
+                        <input
+                            type="text"
+                            className="form-input w-full px-3 h-11 border-none bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
+                            value={alias}
+                            onChange={(e) => setAlias(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 {error && (

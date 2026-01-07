@@ -36,90 +36,136 @@ const ShortenerForm: React.FC = () => {
     };
 
     return (
-        <div className="w-full max-w-[800px] mx-auto relative z-10 group/shortener">
-            {/* Card Container */}
-            <div className="glass-panel rounded-2xl p-2 shadow-2xl shadow-black/20 dark:shadow-black/50 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a202c]">
-                <div className="flex flex-col md:flex-row gap-2">
-                    {/* URL Input */}
-                    <div className="relative flex-grow group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">link</span>
-                        </div>
-                        <input
-                            type="url"
-                            className="w-full h-14 pl-12 pr-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base"
-                            placeholder="Paste your long URL here..."
-                            value={longUrl}
-                            onChange={(e) => setLongUrl(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                        />
-                    </div>
-                    {/* Optional Alias */}
-                    <div className="relative w-full md:w-48 group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">edit</span>
-                        </div>
-                        <input
-                            type="text"
-                            className="w-full h-14 pl-12 pr-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base"
-                            placeholder="Alias (opt)"
-                            value={alias}
-                            onChange={(e) => setAlias(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                        />
-                    </div>
-                    {/* Submit Button */}
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isLoading}
-                        className="h-14 px-8 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 whitespace-nowrap md:w-auto w-full disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                        {isLoading ? (
-                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        ) : (
-                            <>
-                                <span>Shorten</span>
-                                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-                            </>
-                        )}
-                    </button>
+        <div className="glass-panel p-6 md:p-8 rounded-2xl shadow-2xl relative transition-all duration-300">
+            {/* Floating Node Decorative */}
+            <div className="absolute -top-4 -right-4 size-12 bg-surface-dark rounded-full flex items-center justify-center border border-primary/20 shadow-lg z-20">
+                <span className="material-symbols-outlined text-primary">hub</span>
+            </div>
+
+            <div className="flex flex-col gap-6">
+                <div>
+                    <h3 className="text-xl font-bold text-white mb-1">Shorten a URL</h3>
+                    <p className="text-sm text-gray-400">Paste your long link and customize your alias.</p>
                 </div>
 
-                {/* Error Message */}
+                <div className="flex flex-col gap-4">
+                    {/* Destination Input */}
+                    <label className="flex flex-col gap-2">
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Destination</span>
+                        <div className="flex items-center bg-[#1a120e] rounded-xl border border-[#392e28] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/50 transition-all overflow-hidden group">
+                            <div className="pl-4 text-gray-500 group-focus-within:text-primary transition-colors">
+                                <span className="material-symbols-outlined">link</span>
+                            </div>
+                            <input
+                                type="url"
+                                className="w-full bg-transparent border-none text-white placeholder-gray-600 focus:ring-0 h-14 px-4"
+                                placeholder="Paste your long link here..."
+                                value={longUrl}
+                                onChange={(e) => setLongUrl(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                            />
+                        </div>
+                    </label>
+
+                    <div className="flex flex-col md:flex-row gap-4">
+                        {/* Alias Input */}
+                        <label className="flex flex-col gap-2 flex-1">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Alias (Optional)</span>
+                            <div className="flex items-center bg-[#1a120e] rounded-xl border border-[#392e28] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/50 transition-all overflow-hidden group">
+                                <div className="bg-white/5 dark:bg-slate-800/40 px-3 md:px-4 flex items-center h-14 border-r border-[#392e28] group-focus-within:border-primary/50 transition-all">
+                                    <span className="text-gray-400 dark:text-gray-300 text-sm font-black tracking-tight group-focus-within:text-primary transition-colors leading-none">
+                                        {(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/
+                                    </span>
+                                </div>
+                                <input
+                                    type="text"
+                                    className="w-full bg-transparent border-none text-white placeholder-gray-600 focus:ring-0 h-14 px-2"
+                                    placeholder="custom-name"
+                                    value={alias}
+                                    onChange={(e) => setAlias(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                                />
+                            </div>
+                        </label>
+
+                        {/* Submit Button */}
+                        <div className="flex flex-col gap-2 md:w-auto w-full justify-end">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isLoading}
+                                className="h-14 px-8 bg-primary hover:bg-orange-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-900/40 w-full md:w-auto whitespace-nowrap disabled:opacity-70 disabled:grayscale"
+                            >
+                                {isLoading ? (
+                                    <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined">content_cut</span>
+                                        Shorten
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Error Banner */}
                 {error && (
-                    <div className="mt-4 flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-sm font-medium animate-shake">
+                    <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium flex items-center gap-2 animate-shake">
                         <span className="material-symbols-outlined text-[18px]">error</span>
                         {error}
                     </div>
                 )}
 
-                {/* Result */}
-                {result && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50 px-2 flex items-center justify-between animate-fade-in">
-                        <div className="flex flex-col text-left">
-                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">Your Short Link</span>
-                            <a href={result.shortUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-bold text-lg hover:underline">
-                                {result.shortUrl}
-                            </a>
+                {/* Result Area */}
+                <div className={`mt-4 transition-all duration-500 ease-out overflow-hidden ${result ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="bg-[#1a120e] rounded-xl border border-primary/20 p-2 sm:p-3 flex flex-col sm:flex-row items-center gap-3 shadow-lg shadow-orange-900/10">
+
+                        {/* URL Section - Flexible width */}
+                        <div className="flex items-center gap-3 w-full flex-1 min-w-0 bg-[#0B1019]/50 rounded-lg p-2 border border-[#392e28]/30">
+                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                                <span className="material-symbols-outlined text-[20px]">check</span>
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Short Link Ready</span>
+                                <a
+                                    href={result?.shortUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm sm:text-base font-bold text-white hover:text-primary transition-colors truncate block w-full"
+                                    title={result?.shortUrl}
+                                >
+                                    {result?.shortUrl}
+                                </a>
+                            </div>
                         </div>
-                        <div className="flex gap-2">
+
+                        {/* Actions Section - Compact */}
+                        <div className="flex items-center gap-1.5 w-full sm:w-auto flex-shrink-0 justify-end sm:justify-start">
                             <button
                                 onClick={() => setIsQRModalOpen(true)}
-                                className="p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                className="size-9 rounded-lg text-gray-400 hover:text-white hover:bg-[#392e28] transition-all border border-transparent hover:border-gray-700 flex items-center justify-center flex-shrink-0 translate-y-px"
                                 title="QR Code"
                             >
-                                <span className="material-symbols-outlined">qr_code</span>
+                                <span className="material-symbols-outlined text-[20px]">qr_code_2</span>
                             </button>
+
+                            <div className="h-6 w-px bg-[#392e28] hidden sm:block mx-1"></div>
+
                             <button
                                 onClick={handleCopy}
-                                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2"
+                                className={`h-9 px-4 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all flex-shrink-0 whitespace-nowrap shadow-md ${copied
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-white text-black hover:bg-gray-200'
+                                    }`}
                             >
-                                <span className="material-symbols-outlined text-[18px]">content_copy</span>
-                                {copied ? 'Copied!' : 'Copy'}
+                                <span className="material-symbols-outlined text-[16px]">
+                                    {copied ? 'check_circle' : 'content_copy'}
+                                </span>
+                                {copied ? 'Copied' : 'Copy'}
                             </button>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {result && (
@@ -130,8 +176,6 @@ const ShortenerForm: React.FC = () => {
                     alias={result.alias}
                 />
             )}
-            {/* Decorative glow under card */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-20 group-hover/shortener:opacity-30 transition duration-1000 -z-10"></div>
         </div>
     );
 };

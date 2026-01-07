@@ -3,8 +3,10 @@ import { UrlService } from '../url.service';
 import { prisma } from '@/config/database';
 import { nanoid } from 'nanoid';
 import { DeepMockProxy } from 'vitest-mock-extended';
-import { redisClient } from '@/config/redis'; // Import needed to access mock
 import { PrismaClient } from '@prisma/client';
+import { CacheService } from '@/services/cache.service';
+import { ClickRepository } from '@/repositories/click.repository';
+import { UrlRepository } from '@/repositories/url.repository';
 
 // Mock DB
 vi.mock('@/config/database', async () => {
@@ -19,27 +21,50 @@ vi.mock('nanoid', () => ({
     nanoid: vi.fn(),
 }));
 
-// Mock Redis
-vi.mock('@/config/redis', () => {
-    const mockRedisClient = {
-        get: vi.fn(),
-        set: vi.fn(),
-    };
+// Mock CacheService
+vi.mock('@/services/cache.service', () => {
     return {
-        redisClient: {
-            getClient: () => mockRedisClient,
-            isReady: () => true,
-        },
+        CacheService: class {
+            get = vi.fn();
+            set = vi.fn();
+            delete = vi.fn();
+        }
     };
 });
 
-const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-// Helper to access the redis mock
-const getMockRedis = () => redisClient.getClient() as unknown as { get: any; set: any };
+// Mock repositories (if needed for typing, but we use them as args)
+// We need to mock their instances effectively or construct the service with mocks
 
 describe('UrlService', () => {
+    let urlService: UrlService;
+    let mockUrlRepository: any;
+    let mockClickRepository: any;
+    let mockCacheService: any;
+
     beforeEach(() => {
         vi.clearAllMocks();
+
+        // Create fresh mocks for each test
+        mockUrlRepository = {
+            create: vi.fn(),
+            findByAlias: vi.fn(),
+            findById: vi.fn(),
+            findByUser: vi.fn(),
+            delete: vi.fn(),
+            update: vi.fn(),
+        } as unknown as UrlRepository;
+
+        mockClickRepository = {
+            findManyRecent: vi.fn(),
+        } as unknown as ClickRepository;
+
+        mockCacheService = new CacheService({} as any); // Uses the mock implementation above
+
+        urlService = new UrlService(
+            mockUrlRepository,
+            mockClickRepository,
+            mockCacheService
+        );
     });
 
     describe('shortenUrl', () => {
@@ -49,7 +74,7 @@ describe('UrlService', () => {
             const generatedAlias = 'abc1234';
             (nanoid as any).mockReturnValue(generatedAlias);
 
-            prismaMock.url.create.mockResolvedValue({
+            mockUrlRepository.create.mockResolvedValue({
                 id: '1',
                 alias: generatedAlias,
                 longUrl,
@@ -57,15 +82,13 @@ describe('UrlService', () => {
             } as any);
 
             // Act
-            const result = await UrlService.shortenUrl(longUrl);
+            const result = await urlService.shortenUrl(longUrl);
 
             // Assert
             expect(nanoid).toHaveBeenCalledWith(7);
-            expect(prismaMock.url.create).toHaveBeenCalledWith(expect.objectContaining({
-                data: expect.objectContaining({
-                    alias: generatedAlias,
-                    customAlias: false,
-                }),
+            expect(mockUrlRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+                alias: generatedAlias,
+                customAlias: false,
             }));
             expect(result.alias).toBe(generatedAlias);
         });
@@ -75,8 +98,8 @@ describe('UrlService', () => {
             const longUrl = 'https://google.com';
             const customAlias = 'my-link';
 
-            prismaMock.url.findUnique.mockResolvedValue(null); // Validar disponibilidad
-            prismaMock.url.create.mockResolvedValue({
+            mockUrlRepository.findByAlias.mockResolvedValue(null); // Validar disponibilidad
+            mockUrlRepository.create.mockResolvedValue({
                 id: '1',
                 alias: customAlias,
                 longUrl,
@@ -84,21 +107,21 @@ describe('UrlService', () => {
             } as any);
 
             // Act
-            const result = await UrlService.shortenUrl(longUrl, undefined, customAlias);
+            const result = await urlService.shortenUrl(longUrl, undefined, customAlias);
 
             // Assert
             expect(nanoid).not.toHaveBeenCalled();
-            expect(prismaMock.url.create).toHaveBeenCalled();
+            expect(mockUrlRepository.create).toHaveBeenCalled();
             expect(result.alias).toBe(customAlias);
         });
 
         it('should throw error if custom alias is taken', async () => {
             // Arrange
             const customAlias = 'taken';
-            prismaMock.url.findUnique.mockResolvedValue({ id: 'existing' } as any);
+            mockUrlRepository.findByAlias.mockResolvedValue({ id: 'existing' } as any);
 
             // Act & Assert
-            await expect(UrlService.shortenUrl('https://x.com', undefined, customAlias))
+            await expect(urlService.shortenUrl('https://x.com', undefined, customAlias))
                 .rejects.toThrow('El alias personalizado ya está en uso');
         });
 
@@ -110,52 +133,47 @@ describe('UrlService', () => {
             (p2002Error as any).code = 'P2002';
             (p2002Error as any).meta = { target: ['alias'] };
 
-            prismaMock.url.create.mockRejectedValue(p2002Error);
+            mockUrlRepository.create.mockRejectedValue(p2002Error);
 
             // Act & Assert
-            await expect(UrlService.shortenUrl('https://x.com'))
+            await expect(urlService.shortenUrl('https://x.com'))
                 .rejects.toThrow('El alias ya existe');
         });
     });
 
     describe('getUrlData', () => {
-        it('should return data from Redis if cached', async () => {
+        it('should return data from Cache if cached', async () => {
             // Arrange
             const alias = 'cached';
-            const cachedData = { id: '1', longUrl: 'https://cached.com' };
-            const mockRedisClient = getMockRedis();
-            mockRedisClient.get.mockResolvedValue(JSON.stringify(cachedData));
+            const cachedData = { id: '1', longUrl: 'https://cached.com', expiresAt: null };
+            mockCacheService.get.mockResolvedValue(cachedData);
 
             // Act
-            const result = await UrlService.getUrlData(alias);
+            const result = await urlService.getUrlData(alias);
 
             // Assert
-            expect(mockRedisClient.get).toHaveBeenCalledWith(`url:${alias}`);
+            expect(mockCacheService.get).toHaveBeenCalledWith(`url:${alias}`);
             expect(result).toEqual(cachedData);
-            expect(prismaMock.url.findUnique).not.toHaveBeenCalled();
+            expect(mockUrlRepository.findByAlias).not.toHaveBeenCalled();
         });
 
-        it('should fetch from DB and cache if not in Redis', async () => {
+        it('should fetch from DB and cache if not in Cache', async () => {
             // Arrange
             const alias = 'db-only';
-            const mockRedisClient = getMockRedis();
-            mockRedisClient.get.mockResolvedValue(null);
+            mockCacheService.get.mockResolvedValue(null);
 
-            const dbData = { id: '1', longUrl: 'https://db.com' };
-            prismaMock.url.findUnique.mockResolvedValue(dbData as any);
+            const dbData = { id: '1', longUrl: 'https://db.com', expiresAt: null };
+            mockUrlRepository.findByAlias.mockResolvedValue(dbData as any);
 
             // Act
-            const result = await UrlService.getUrlData(alias);
+            const result = await urlService.getUrlData(alias);
 
             // Assert
-            expect(prismaMock.url.findUnique).toHaveBeenCalledWith({
-                where: { alias },
-                select: { id: true, longUrl: true, expiresAt: true },
-            });
-            expect(mockRedisClient.set).toHaveBeenCalledWith(
+            expect(mockUrlRepository.findByAlias).toHaveBeenCalledWith(alias);
+            expect(mockCacheService.set).toHaveBeenCalledWith(
                 `url:${alias}`,
-                JSON.stringify(dbData),
-                expect.any(Object) // options
+                expect.objectContaining({ id: '1' }),
+                86400
             );
             expect(result).toEqual(dbData);
         });

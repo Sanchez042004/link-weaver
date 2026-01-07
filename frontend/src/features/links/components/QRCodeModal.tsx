@@ -24,9 +24,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Main QR Code" width="sm">
+        <Modal isOpen={isOpen} onClose={onClose} title="QR Code" width="sm">
             <div className="flex flex-col items-center gap-6">
-                <div className="bg-white p-4 rounded-xl shadow-inner border border-slate-200">
+                <div className="bg-white p-4 rounded-xl shadow-inner border border-gray-200">
                     <QRCodeCanvas
                         id="qr-code-canvas"
                         value={url}
@@ -35,20 +35,20 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, 
                         includeMargin={true}
                     />
                 </div>
-                <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                     Scan this code to visit the link immediately from your mobile device.
                 </p>
                 <div className="flex gap-3 w-full">
                     <button
                         onClick={downloadQRCode}
-                        className="flex-1 h-10 bg-primary hover:bg-blue-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 h-10 bg-primary hover:bg-orange-600 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] active:scale-95"
                     >
                         <span className="material-symbols-outlined text-[20px]">download</span>
                         Download PNG
                     </button>
                     <button
                         onClick={onClose}
-                        className="flex-1 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors"
+                        className="flex-1 h-10 bg-[#1a120e] hover:bg-[#392e28] text-gray-300 hover:text-white border border-[#392e28] font-bold rounded-lg transition-all"
                     >
                         Close
                     </button>

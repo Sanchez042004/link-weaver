@@ -1,5 +1,6 @@
 import React from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
 interface SidebarProps {
@@ -8,13 +9,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-    const navigate = useNavigate();
+    const { logout } = useAuth();
     const location = useLocation();
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/');
+        logout();
     };
 
     const navItems = [
@@ -72,6 +71,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                                 );
                             })}
                         </nav>
+
+                        {/* Promo Card */}
+                        <div className="mt-4 p-5 bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-2xl relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 size-20 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors duration-500" />
+                            <div className="relative z-10">
+                                <span className="material-symbols-outlined text-primary mb-3 text-[32px]">bolt</span>
+                                <h4 className="text-white font-bold text-sm mb-1">Shorten & Track</h4>
+                                <p className="text-slate-400 text-xs leading-relaxed">
+                                    Create custom aliases and track every click for free. Simple, fast, and open.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Footer Actions */}

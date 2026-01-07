@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authApi, type User } from '../api/auth.api';
 
 interface AuthContextType {
@@ -9,6 +10,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     register: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
+    deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,6 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -55,10 +58,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('user');
         setToken(null);
         setUser(null);
+        navigate('/', { replace: true });
+    };
+
+    const deleteAccount = async () => {
+        await authApi.deleteAccount();
+        logout();
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!token, token, isLoading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!token, token, isLoading, login, register, logout, deleteAccount }}>
             {children}
         </AuthContext.Provider>
     );

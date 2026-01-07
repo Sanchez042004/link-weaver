@@ -1,24 +1,29 @@
-import React, { useState } from 'react';
-import { useLinks } from '../hooks/useLinks';
+import React, { useState, useEffect } from 'react';
+import { useLinks } from '../features/links/hooks/useLinks';
 import { useAuth } from '../context/AuthContext';
+import { useGeneralAnalytics } from '../hooks/useAnalytics';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 import { DashboardLayout } from '../layouts/DashboardLayout';
-import { DashboardStats } from '../features/dashboard/components/DashboardStats';
-import { LinksTable } from '../features/links/components/LinksTable';
+import DashboardHeader from '../features/dashboard/components/DashboardHeader';
+import StatsGrid from '../features/dashboard/components/StatsGrid';
+import ActivityChart from '../features/dashboard/components/ActivityChart';
+import RecentLinksTable from '../features/dashboard/components/RecentLinksTable';
+
 import { CreateLinkModal } from '../features/links/components/CreateLinkModal';
 import { EditLinkModal } from '../features/links/components/EditLinkModal';
-import { DeleteLinkModal } from '../features/links/components/DeleteLinkModal';
 import { QRCodeModal } from '../features/links/components/QRCodeModal';
+import ConfirmModal from '../components/ui/ConfirmModal';
 import type { Url } from '../api/url.api';
-import { useNavigate } from 'react-router-dom';
-// ... imports
-
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { urls, isLoading, deleteLink, fetchUrls } = useLinks();
+    const { urls, isLoading: isLinksLoading, deleteLink, fetchUrls } = useLinks();
+    const [filterDays, setFilterDays] = useState(7);
+    const { data: analyticsData, loading: isAnalyticsLoading } = useGeneralAnalytics(filterDays);
 
-    console.log('DashboardPage render:', { user, urls, isLoading });
+    const isLoading = isLinksLoading || isAnalyticsLoading;
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -27,6 +32,17 @@ const DashboardPage: React.FC = () => {
 
     const [selectedLink, setSelectedLink] = useState<Url | null>(null);
     const [linkToDelete, setLinkToDelete] = useState<Url | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const location = useLocation();
+
+    // Listen for create modal state from navigation
+    useEffect(() => {
+        if (location.state?.openCreateModal) {
+            setIsCreateModalOpen(true);
+            // Clear state to avoid reopening on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     const handleEdit = (url: Url) => {
         setSelectedLink(url);
@@ -43,9 +59,14 @@ const DashboardPage: React.FC = () => {
 
     const handleConfirmDelete = async () => {
         if (linkToDelete) {
-            await deleteLink(linkToDelete.id);
-            setLinkToDelete(null);
-            setIsDeleteModalOpen(false);
+            setIsDeleting(true);
+            try {
+                await deleteLink(linkToDelete.id);
+                setLinkToDelete(null);
+                setIsDeleteModalOpen(false);
+            } finally {
+                setIsDeleting(false);
+            }
         }
     };
 
@@ -61,72 +82,123 @@ const DashboardPage: React.FC = () => {
 
     return (
         <DashboardLayout>
-            <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col gap-8">
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex flex-col gap-2">
-                        <h2 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white">Dashboard</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-base font-normal max-w-lg">
-                            Welcome back, {user?.name || 'User'}! Here's your link performance overview.
-                        </p>
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative font-body">
+                <DashboardHeader />
+
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                    <div className="max-w-[1200px] mx-auto flex flex-col gap-8">
+                        {/* Welcome & Headline */}
+                        <div className="page-transition">
+                            <h1 className="text-white text-3xl font-bold tracking-tight font-display">
+                                Welcome back, {user?.name?.split(' ')[0] || 'User'} <span className="animate-pulse inline-block ml-1">👋</span>
+                            </h1>
+                            <p className="text-slate-400 mt-1">Here's what's happening with your links today.</p>
+                        </div>
+
+                        {/* Date Filters */}
+                        <div className="flex items-center justify-between overflow-x-auto pb-2 page-transition" style={{ animationDelay: '0.05s' }}>
+                            <div className="flex gap-2 p-1 bg-background-dark/80 rounded-xl border border-border-dark/20">
+                                {[
+                                    { label: 'Last 7 Days', value: 7 },
+                                    { label: 'Last 30 Days', value: 30 },
+                                    { label: 'All Time', value: 0 }
+                                ].map((filter) => (
+                                    <button
+                                        key={filter.value}
+                                        onClick={() => setFilterDays(filter.value)}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all font-body ${filterDays === filter.value
+                                            ? 'bg-surface-dark text-white shadow-sm'
+                                            : 'text-slate-400 dark:text-[#9db9a6] hover:bg-surface-dark/50 hover:text-white'
+                                            }`}
+                                    >
+                                        {filter.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-[#586e60] font-body">
+                                <span className="material-symbols-outlined text-[16px]">schedule</span>
+                                Updated just now
+                            </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="page-transition" style={{ animationDelay: '0.1s' }}>
+                            <StatsGrid
+                                urls={urls}
+                                isLoading={isLoading}
+                                comparison={analyticsData?.comparison}
+                                filteredClicks={analyticsData?.totalClicks}
+                                topLink={analyticsData?.blocks?.topLinks?.[0]}
+                            />
+                        </div>
+
+                        {/* Main Chart Row */}
+                        <div className="w-full page-transition" style={{ animationDelay: '0.2s' }}>
+                            <ActivityChart
+                                timeline={analyticsData?.blocks?.timeline || null}
+                                isLoading={isAnalyticsLoading}
+                                title={`Overview ${filterDays === 0 ? '(All Time)' : `(Last ${filterDays} Days)`}`}
+                            />
+                        </div>
+
+                        {/* Recent Links Table */}
+                        <div className="page-transition" style={{ animationDelay: '0.3s' }}>
+                            <RecentLinksTable
+                                urls={urls}
+                                isLoading={isLoading}
+                                onEdit={handleEdit}
+                                onDelete={handleDeleteClick}
+                                onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
+                                onShowQR={(url) => {
+                                    setSelectedLink(url);
+                                    setIsQRModalOpen(true);
+                                }}
+                            />
+                        </div>
                     </div>
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="group flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white shadow-lg shadow-primary/25 transition-all w-full md:w-auto"
-                    >
-                        <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
-                        <span className="text-sm font-bold tracking-wide">Create New Link</span>
-                    </button>
-                </header>
-
-                <DashboardStats urls={urls} isLoading={isLoading} />
-
-                <section className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Recent Links</h3>
-                    </div>
-                    <LinksTable
-                        urls={urls}
-                        isLoading={isLoading}
-                        onEdit={handleEdit}
-                        onDelete={handleDeleteClick}
-                        onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
-                        onShowQR={(url) => {
-                            setSelectedLink(url);
-                            setIsQRModalOpen(true);
-                        }}
-                    />
-                </section>
-
-                <CreateLinkModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSuccess={handleSuccessCreate}
-                />
-
-                {selectedLink && (
-                    <>
-                        <EditLinkModal
-                            isOpen={isEditModalOpen}
-                            onClose={() => setIsEditModalOpen(false)}
-                            link={selectedLink}
-                            onSuccess={handleSuccessEdit}
-                        />
-                        <QRCodeModal
-                            isOpen={isQRModalOpen}
-                            onClose={() => setIsQRModalOpen(false)}
-                            url={selectedLink.shortUrl}
-                            alias={selectedLink.alias}
-                        />
-                    </>
-                )}
-
-                <DeleteLinkModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={() => setIsDeleteModalOpen(false)}
-                    onConfirm={handleConfirmDelete}
-                    alias={linkToDelete?.alias || ''}
-                />
+                </div>
             </div>
+
+            {/* Modals outside scroll area */}
+            <CreateLinkModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={handleSuccessCreate}
+            />
+
+            {selectedLink && (
+                <>
+                    <EditLinkModal
+                        isOpen={isEditModalOpen}
+                        onClose={() => setIsEditModalOpen(false)}
+                        link={selectedLink}
+                        onSuccess={handleSuccessEdit}
+                    />
+                    <QRCodeModal
+                        isOpen={isQRModalOpen}
+                        onClose={() => setIsQRModalOpen(false)}
+                        url={selectedLink.shortUrl}
+                        alias={selectedLink.alias}
+                    />
+                </>
+            )}
+
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setLinkToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Delete Link"
+                message={`This is a permanent action. All analytics data for ${(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/${linkToDelete?.alias} will be permanently lost.`}
+                confirmText="Delete Link"
+                type="danger"
+                isLoading={isDeleting}
+                verificationValue={linkToDelete ? `/${linkToDelete.alias}` : ''}
+                verificationPlaceholder="/alias"
+            />
         </DashboardLayout>
     );
 };

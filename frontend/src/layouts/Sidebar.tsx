@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
-import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -11,22 +10,9 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { logout } = useAuth();
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
-    const handleLogout = () => {
-        // Navigate to home immediately so ProtectedRoute doesn't catch the unauth state change on the current route
-        navigate('/');
-        // Use a small timeout to allow navigation state to settle before clearing auth, 
-        // preventing the "flicker" of redirect to login
-        setTimeout(() => {
-            logout();
-        }, 50);
-    };
 
     const navItems = [
         { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
-        { name: 'Overview', icon: 'show_chart', path: '/analytics' },
     ];
 
     return (
@@ -40,59 +26,97 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             )}
 
             {/* Sidebar Container */}
-            <aside className={`fixed top-0 left-0 bottom-0 w-72 h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-transform duration-300 z-[70] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="h-16 flex items-center px-6 lg:px-8 border-b border-slate-200/50 dark:border-slate-800/50">
-                    <Link to="/dashboard">
+            <aside className={`fixed top-0 left-0 bottom-0 w-72 h-full border-r border-border-dark/40 bg-background-dark transition-transform duration-300 z-[70] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="h-24 flex items-center px-8">
+                    {location.pathname !== '/dashboard' ? (
+                        <Link to="/dashboard">
+                            <Logo />
+                        </Link>
+                    ) : (
                         <Logo />
-                    </Link>
-                    <button onClick={onClose} className="lg:hidden ml-auto p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                    )}
+                    <button onClick={onClose} className="lg:hidden ml-auto p-2 text-slate-500 hover:bg-surface-dark rounded-lg">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
-                <div className="p-6 flex-1 flex flex-col justify-between h-[calc(100%-64px)] overflow-y-auto">
-                    <nav className="flex flex-col gap-2">
-                        {navItems.map((item) => {
-                            const isActive = location.pathname === item.path;
-                            return (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    onClick={onClose}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg group transition-all ${isActive
-                                        ? 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-blue-600'
-                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'}`}
-                                >
-                                    <span className={`material-symbols-outlined text-[24px] ${isActive ? 'text-white' : 'group-hover:text-primary'} transition-colors`}>
-                                        {item.icon}
-                                    </span>
-                                    <p className={`text-sm leading-normal ${isActive ? 'font-semibold' : 'font-medium group-hover:text-slate-900 dark:group-hover:text-white'} transition-colors`}>
-                                        {item.name}
-                                    </p>
-                                </Link>
-                            );
-                        })}
-                    </nav>
+                <div className="px-6 pb-6 flex-1 flex flex-col justify-between h-[calc(100%-96px)]">
+                    <div className="flex flex-col gap-6">
+                        <nav className="flex flex-col gap-2">
+                            {navItems.map((item) => {
+                                const isActive = location.pathname === item.path;
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        onClick={onClose}
+                                        className={`flex items-center gap-3 px-6 py-3.5 rounded-full transition-all border ${isActive
+                                            ? 'bg-primary/5 border-primary/40 text-primary shadow-[inset_0_0_12px_rgba(236,91,19,0.05)]'
+                                            : 'text-slate-400 border-transparent hover:bg-surface-dark/40 hover:text-white'}`}
+                                    >
+                                        <span className={`material-symbols-outlined text-[24px] ${isActive ? 'text-primary' : 'group-hover:text-primary'} transition-colors`}>
+                                            {item.icon}
+                                        </span>
+                                        <p className={`text-sm tracking-wide ${isActive ? 'font-bold' : 'font-medium'} font-display`}>
+                                            {item.name}
+                                        </p>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
 
-                    <div className="flex flex-col gap-2 border-t border-slate-200 dark:border-slate-800/50 pt-4">
-                        {!showLogoutConfirm ? (
-                            <button onClick={() => setShowLogoutConfirm(true)} className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 dark:hover:text-red-400 transition-all cursor-pointer">
-                                <span className="material-symbols-outlined text-[24px]">logout</span>
-                                <p className="text-sm font-medium leading-normal">Log Out</p>
-                            </button>
-                        ) : (
-                            <div className="flex flex-col gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
-                                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 text-center mb-1">Confirm Logout?</p>
-                                <div className="flex gap-2">
-                                    <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                        Cancel
-                                    </button>
-                                    <button onClick={handleLogout} className="flex-1 py-1.5 text-xs font-bold text-white bg-red-600 rounded hover:bg-red-700 shadow-sm shadow-red-500/20 transition-colors">
-                                        Logout
-                                    </button>
+                        {/* Tips Section */}
+                        <div className="mt-4 p-5 bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-2xl relative overflow-hidden">
+                            <div className="absolute -right-4 -top-4 size-20 bg-primary/10 rounded-full blur-2xl" />
+                            <div className="relative z-10 flex flex-col items-center text-center gap-4">
+                                <div className="flex flex-col items-center gap-1 text-primary">
+                                    <span className="material-symbols-outlined text-[24px]">lightbulb</span>
+                                    <h4 className="text-white font-bold text-sm uppercase tracking-wider">Quick Tips</h4>
                                 </div>
+                                <ul className="space-y-4">
+                                    <li>
+                                        <p className="text-slate-400 text-[11px] leading-snug">
+                                            <span className="text-slate-200 font-bold block mb-1">Custom Aliases</span>
+                                            Increase CTR by up to 30% with memorable names.
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p className="text-slate-400 text-[11px] leading-snug">
+                                            <span className="text-slate-200 font-bold block mb-1">QR Codes</span>
+                                            Perfect for offline marketing and business cards.
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p className="text-slate-400 text-[11px] leading-snug">
+                                            <span className="text-slate-200 font-bold block mb-1">Smart Search</span>
+                                            Use the header search for instant analytics.
+                                        </p>
+                                    </li>
+                                </ul>
                             </div>
-                        )}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-2 border-t border-border-dark/30 pt-6">
+                            <Link
+                                to="/settings"
+                                onClick={onClose}
+                                className={`flex items-center gap-3 px-6 py-3 transition-all ${location.pathname === '/settings' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                <span className="material-symbols-outlined text-[22px]">settings</span>
+                                <p className="text-sm font-bold font-display">Settings</p>
+                            </Link>
+                        </div>
+
+                        {/* Create Link Button matching design */}
+                        <button
+                            onClick={() => navigate('/dashboard', { state: { openCreateModal: true } })}
+                            className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-primary hover:brightness-110 text-white font-black text-sm shadow-xl shadow-primary/20 transition-all active:scale-[0.98] font-display group"
+                        >
+                            <span className="material-symbols-outlined text-[20px] font-black group-hover:rotate-90 transition-all duration-300">add</span>
+                            <span>Create New Link</span>
+                        </button>
                     </div>
                 </div>
             </aside>

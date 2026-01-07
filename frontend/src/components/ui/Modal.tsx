@@ -42,18 +42,18 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div
                 ref={modalRef}
-                className={`bg-white dark:bg-[#1e293b] w-full ${widthClasses[width]} rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/50 overflow-hidden animate-in zoom-in-95 duration-200 relative`}
+                className={`bg-white dark:bg-[#1a120e] w-full ${widthClasses[width]} rounded-2xl shadow-2xl border border-slate-200 dark:border-primary/20 overflow-hidden animate-in zoom-in-95 duration-200 relative`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
             >
                 {/* Header */}
                 {!hideHeader && (
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700/50">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-primary/10">
                         <h3 id="modal-title" className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
                         <button
                             onClick={onClose}
-                            className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+                            className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-colors"
                             aria-label="Close modal"
                         >
                             <span className="material-symbols-outlined">close</span>

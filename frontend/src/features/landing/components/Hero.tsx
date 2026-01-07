@@ -5,39 +5,95 @@ const Hero: React.FC = () => {
     const scrollToFeatures = () => {
         const element = document.getElementById('features');
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+            const offset = 100; // Ajusta este número para que baje más (positivo) o menos (negativo)
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.scrollY - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
         }
     };
 
     return (
-        <main className="min-h-[calc(100vh-64px)] flex flex-col justify-center pb-20 relative overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-primary/20 dark:bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+        <>
+            <div className="relative bg-pattern min-h-[calc(100vh-80px)] flex flex-col justify-center overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute top-1/4 right-0 -mr-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -ml-20 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center text-center relative z-10">
-                {/* Hero Text */}
-                <div className="max-w-3xl mx-auto mb-8 md:mb-12">
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white mb-6 leading-[1.1]">
-                        Shorten Your Links,<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Expand Your Reach</span>
-                    </h1>
-                    <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                        A fast, privacy-focused URL shortener built for modern needs. Transform long, ugly links into smart, trackable assets for your business.
-                    </p>
+                <div className="layout-container flex h-full grow flex-col relative z-10">
+                    <div className="px-4 md:px-10 lg:px-20 py-12 md:py-20">
+                        <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-12 lg:gap-20 items-center translate-y-[1px]">
+                            {/* Left Column: Copy */}
+                            <div className="flex flex-col gap-6 lg:w-1/2">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dark border border-primary/20 w-fit">
+                                    <span className="block size-2 rounded-full bg-primary animate-pulse"></span>
+                                    <span className="text-xs font-bold text-primary uppercase tracking-wider">New: Analytics 2.0</span>
+                                </div>
+                                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[0.95] tracking-tighter text-white">
+                                    Untangle <br />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-300">your analytics.</span>
+                                </h1>
+                                <p className="text-lg text-gray-400 max-w-lg leading-relaxed">
+                                    The URL shortener for creators who value speed, privacy, and absolute control over their traffic. Map your audience's journey with precision.
+                                </p>
+                                <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-500 font-medium">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+                                        <span>No credit card required</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+                                        <span>GDPR Compliant</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Interactive Card */}
+                            <div className="w-full lg:w-1/2">
+                                <ShortenerForm />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Main Shortener Interface */}
-                <ShortenerForm />
-            </div>
+                {/* Scroll Indicator */}
+                <div
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:block text-gray-600 cursor-pointer hover:text-primary transition-colors z-20"
+                    onClick={scrollToFeatures}
+                >
+                    <span className="material-symbols-outlined text-3xl">keyboard_arrow_down</span>
+                </div>
 
-            {/* Scroll Indicator */}
-            <div className="absolute bottom-6 left-0 w-full flex flex-col items-center gap-2 cursor-pointer group animate-bounce z-20" onClick={scrollToFeatures}>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 group-hover:text-primary transition-colors">Learn More</span>
-                <div className="size-10 flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm group-hover:border-primary group-hover:text-primary transition-all">
-                    <span className="material-symbols-outlined text-2xl">keyboard_arrow_down</span>
+            </div>
+            {/* Stats Ticker */}
+            <div className="w-full bg-primary text-white py-3 overflow-hidden whitespace-nowrap border-y border-orange-700 relative z-20">
+                <style>
+                    {`
+                    @keyframes marquee {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
+                    }
+                    `}
+                </style>
+                <div className="inline-flex animate-[marquee_20s_linear_infinite] items-center gap-12 text-sm font-bold uppercase tracking-widest">
+                    <span>// Lightning Fast Redirects</span>
+                    <span>// Advanced Traffic Analytics</span>
+                    <span>// Secure Link Management</span>
+                    <span>// Privacy First Tracking</span>
+                    <span>// Custom Branded Domains</span>
+                    <span>// Global Infrastructure</span>
+                    <span>// Lightning Fast Redirects</span>
+                    <span>// Advanced Traffic Analytics</span>
+                    <span>// Secure Link Management</span>
+                    <span>// Privacy First Tracking</span>
+                    <span>// Custom Branded Domains</span>
+                    <span>// Global Infrastructure</span>
                 </div>
             </div>
-        </main>
+        </>
     );
 };
 

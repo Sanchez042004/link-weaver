@@ -11,20 +11,22 @@ export default {
     theme: {
         extend: {
             colors: {
-                "primary": "#2b6cee",
-                "background-light": "#f6f6f8",
-                "background-dark": "#101622",
-                "surface-dark": "#1e293b",
+                "primary": "#ec5b13",
+                "background-light": "#f8f6f6",
+                "background-dark": "#221610",
+                "surface-dark": "#2e201a",
                 "surface-light": "#ffffff",
+                "border-dark": "#4a2d1f", // Rich dark orange/brown for borders
             },
             fontFamily: {
-                "display": ["DM Sans", "sans-serif"],
-                "sans": ["DM Sans", "sans-serif"],
+                "display": ["Space Grotesk", "sans-serif"],
+                "body": ["Noto Sans", "sans-serif"],
+                "sans": ["Space Grotesk", "sans-serif"],
             },
             borderRadius: {
                 "DEFAULT": "0.5rem",
-                "lg": "0.75rem",
-                "xl": "1rem",
+                "lg": "1rem",
+                "xl": "1.5rem",
                 "full": "9999px"
             },
             keyframes: {

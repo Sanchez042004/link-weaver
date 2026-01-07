@@ -14,4 +14,8 @@ export class UserRepository {
     async create(data: Prisma.UserCreateInput): Promise<User> {
         return this.prisma.user.create({ data });
     }
+
+    async delete(id: string): Promise<User> {
+        return this.prisma.user.delete({ where: { id } });
+    }
 }

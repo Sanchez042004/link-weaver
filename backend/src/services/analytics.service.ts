@@ -60,7 +60,21 @@ export class AnalyticsService {
     /**
      * Get full stats for a URL
      */
-    public async getUrlStats(urlId: string) {
+    public async getUrlStats(urlId: string, days: number = 7) {
+        // Calculate start date based on filter
+        let startDate: Date;
+        let previousStartDate: Date;
+
+        if (days === 0) {
+            // All time: use a very old date
+            startDate = new Date(0);
+            previousStartDate = new Date(0);
+        } else {
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            previousStartDate = new Date(startDate);
+            previousStartDate.setDate(previousStartDate.getDate() - days);
+        }
         // Parallel execution for performance
         const [
             totalClicks,
@@ -69,15 +83,19 @@ export class AnalyticsService {
             os,
             devices,
             recentClicks,
-            lastClick
+            lastClick,
+            referrersCurrent,
+            referrersPrevious
         ] = await Promise.all([
-            this.clickRepository.countByUrl(urlId),
-            this.clickRepository.groupByCountry(urlId),
-            this.clickRepository.groupByBrowser(urlId),
-            this.clickRepository.groupByOS(urlId),
-            this.clickRepository.groupByDevice(urlId),
-            this.clickRepository.findRecent(urlId, this.getSevenDaysAgo()),
-            this.clickRepository.findLastByUrl(urlId)
+            this.clickRepository.countByUrlInRange(urlId, startDate),
+            this.clickRepository.groupByCountry(urlId, startDate),
+            this.clickRepository.groupByBrowser(urlId, startDate),
+            this.clickRepository.groupByOS(urlId, startDate),
+            this.clickRepository.groupByDevice(urlId, startDate),
+            this.clickRepository.findDailyClicksBatch([urlId], startDate),
+            this.clickRepository.findLastByUrl(urlId),
+            this.clickRepository.groupByReferer(urlId, startDate),
+            this.clickRepository.groupByReferer(urlId, previousStartDate, startDate)
         ]);
 
         return {
@@ -88,7 +106,8 @@ export class AnalyticsService {
                 browsers: browsers.map((b: any) => ({ name: b.browser || 'Other', value: b._count.browser })),
                 os: os.map((o: any) => ({ name: o.os || 'Other', value: o._count.os })),
                 devices: devices.map((d: any) => ({ name: d.device || 'Other', value: d._count.device })),
-                timeline: this.processTimeline(recentClicks),
+                referrers: this.processReferrerTrends(referrersCurrent, referrersPrevious),
+                timeline: this.transformToTimeline(recentClicks),
             },
         };
     }
@@ -96,7 +115,24 @@ export class AnalyticsService {
     /**
      * Get full stats for a user
      */
-    public async getUserStats(userId: string) {
+    public async getUserStats(userId: string, days: number = 7) {
+        let startDate: Date;
+        let previousStartDate: Date;
+
+        if (days === 0) {
+            startDate = new Date(0);
+            previousStartDate = new Date(0);
+        } else {
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            previousStartDate = new Date(startDate);
+            previousStartDate.setDate(previousStartDate.getDate() - days);
+        }
+
+        const topLinksPromise = days === 0
+            ? this.urlRepository.findTopByUser(userId, 100)
+            : this.clickRepository.findTopLinksByUserInRange(userId, startDate, 5);
+
         const [
             totalClicks,
             countries,
@@ -104,52 +140,128 @@ export class AnalyticsService {
             os,
             devices,
             recentClicks,
-            topLinksRaw
+            topLinksRaw,
+            clicksToday,
+            clicksYesterday,
+            linksToday,
+            linksYesterday,
+            referrersCurrent,
+            referrersPrevious
         ] = await Promise.all([
-            this.clickRepository.countByUser(userId),
-            this.clickRepository.groupByUserCountry(userId),
-            this.clickRepository.groupByUserBrowser(userId),
-            this.clickRepository.groupByUserOS(userId),
-            this.clickRepository.groupByUserDevice(userId),
-            this.clickRepository.findUserRecent(userId, this.getSevenDaysAgo()),
-            this.urlRepository.findTopByUser(userId, 100)
+            this.clickRepository.countByUserInRange(userId, startDate, new Date()),
+            this.clickRepository.groupByUserCountry(userId, startDate),
+            this.clickRepository.groupByUserBrowser(userId, startDate),
+            this.clickRepository.groupByUserOS(userId, startDate),
+            this.clickRepository.groupByUserDevice(userId, startDate),
+            this.clickRepository.findUserDailyClicks(userId, startDate),
+            topLinksPromise,
+            this.clickRepository.countByUserInRange(userId, this.getTodayStart(), new Date()),
+            this.clickRepository.countByUserInRange(userId, this.getYesterdayStart(), this.getYesterdayEnd()),
+            this.urlRepository.countByUserInRange(userId, this.getTodayStart(), new Date()),
+            this.urlRepository.countByUserInRange(userId, this.getYesterdayStart(), this.getYesterdayEnd()),
+            this.clickRepository.groupByUserReferer(userId, startDate),
+            this.clickRepository.groupByUserReferer(userId, previousStartDate, startDate)
         ]);
 
-        // Sort by click count and take top 5
-        const topLinks = topLinksRaw
-            .sort((a, b) => b._count.clicks - a._count.clicks)
-            .slice(0, 5)
-            .map(link => ({
-                alias: link.alias,
-                longUrl: link.longUrl,
-                clicks: link._count.clicks
-            }));
+        // Process Top Links
+        let topLinks;
+        if (days === 0) {
+            topLinks = (topLinksRaw as any[])
+                .sort((a, b) => b._count.clicks - a._count.clicks)
+                .slice(0, 5)
+                .map(link => ({
+                    alias: link.alias,
+                    longUrl: link.longUrl,
+                    clicks: link._count.clicks
+                }));
+        } else {
+            const raw = topLinksRaw as any[];
+            // Fetch URL details
+            const ids = raw.map(r => r.urlId);
+            const urls = await this.urlRepository.findByIds(ids);
+            const urlMap = new Map(urls.map(u => [u.id, u]));
+
+            topLinks = raw.map(r => {
+                const u = urlMap.get(r.urlId);
+                return {
+                    alias: u?.alias || 'Unknown',
+                    longUrl: u?.longUrl || '',
+                    clicks: r._count.id
+                };
+            });
+        }
 
         return {
             totalClicks,
+            comparison: {
+                clicksToday,
+                clicksYesterday,
+                linksToday,
+                linksYesterday
+            },
             blocks: {
                 countries: countries.map((c: any) => ({ name: c.country || 'Unknown', value: c._count.country })),
                 browsers: browsers.map((b: any) => ({ name: b.browser || 'Other', value: b._count.browser })),
                 os: os.map((o: any) => ({ name: o.os || 'Other', value: o._count.os })),
                 devices: devices.map((d: any) => ({ name: d.device || 'Other', value: d._count.device })),
-                timeline: this.processTimeline(recentClicks),
+                referrers: this.processReferrerTrends(referrersCurrent, referrersPrevious),
+                timeline: this.transformToTimeline(recentClicks),
                 topLinks
             },
         };
     }
 
-    // Helpers
-    private getSevenDaysAgo(): Date {
+
+
+    private getTodayStart(): Date {
         const d = new Date();
-        d.setDate(d.getDate() - 7);
+        d.setHours(0, 0, 0, 0);
         return d;
     }
 
-    private processTimeline(clicks: { timestamp: Date }[]) {
-        return clicks.reduce((acc, click) => {
-            const date = click.timestamp.toISOString().split('T')[0];
-            acc[date] = (acc[date] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
+    private getYesterdayStart(): Date {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    private getYesterdayEnd(): Date {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        d.setHours(23, 59, 59, 999);
+        return d;
+    }
+
+    private transformToTimeline(dbResult: any[]) {
+        const timeline: Record<string, number> = {};
+        // Handle both batch result (with urlId) and simple user result
+        dbResult.forEach((item: any) => {
+            timeline[item.date] = item.count;
+        });
+        return timeline;
+    }
+
+    private processReferrerTrends(current: any[], previous: any[]) {
+        const prevMap = new Map(previous.map(p => [p.referer || 'Direct', p._count.referer]));
+
+        return current.map(curr => {
+            const name = curr.referer || 'Direct';
+            const currVal = curr._count.referer;
+            const prevVal = prevMap.get(name) || 0;
+
+            let trend = 0;
+            if (prevVal === 0) {
+                trend = currVal > 0 ? 100 : 0;
+            } else {
+                trend = Math.round(((currVal - prevVal) / prevVal) * 100);
+            }
+
+            return {
+                name,
+                value: currVal,
+                trend
+            };
+        });
     }
 }

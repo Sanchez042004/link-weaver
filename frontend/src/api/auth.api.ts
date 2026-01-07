@@ -34,6 +34,15 @@ export const authApi = {
             handleApiError(error);
             throw error;
         }
+    },
+
+    deleteAccount: async (): Promise<void> => {
+        try {
+            await apiClient.delete('/users/me');
+        } catch (error) {
+            handleApiError(error);
+            throw error;
+        }
     }
 };
 

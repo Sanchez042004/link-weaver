@@ -37,6 +37,8 @@ async function startServer() {
             Logger.info('=============================================');
             Logger.info(`🚀 SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
             Logger.info(`Entorno: ${env.NODE_ENV}`);
+            Logger.info(`🔗 API Root: http://localhost:${PORT}/`);
+            Logger.info(`💓 Health:   http://localhost:${PORT}/health`);
             Logger.info('=============================================');
         });
 

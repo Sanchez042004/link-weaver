@@ -20,4 +20,13 @@ export class UserService {
 
         return userWithoutPassword;
     }
+
+    /**
+     * Delete user account
+     */
+    public async deleteUser(userId: string) {
+        // Prisma will handle cascading deletes if configured in schema
+        // (Assuming CASCADE is set for urls and clicks)
+        return this.userRepository.delete(userId);
+    }
 }

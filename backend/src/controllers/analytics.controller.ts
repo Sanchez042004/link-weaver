@@ -17,6 +17,7 @@ export class AnalyticsController {
     public getStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const { alias } = req.params;
         const userId = req.user?.userId;
+        const days = req.query.days ? parseInt(req.query.days as string) : 7;
 
         try {
             // 1. Find URL and verify ownership
@@ -34,7 +35,7 @@ export class AnalyticsController {
             }
 
             // 2. Get stats
-            const stats = await this.analyticsService.getUrlStats(url.id);
+            const stats = await this.analyticsService.getUrlStats(url.id, days);
 
             // 3. Build response
             const baseUrl = env.BASE_URL || `http://localhost:${env.PORT}`;
@@ -70,6 +71,7 @@ export class AnalyticsController {
      */
     public getGeneralStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const userId = req.user?.userId;
+        const days = req.query.days ? parseInt(req.query.days as string) : 7;
 
         if (!userId) {
             // Middleware should handle this usually but if not
@@ -77,7 +79,7 @@ export class AnalyticsController {
         }
 
         try {
-            const stats = await this.analyticsService.getUserStats(userId);
+            const stats = await this.analyticsService.getUserStats(userId, days);
 
             res.json({
                 success: true,
