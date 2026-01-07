@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { urlApi, type Url } from '../../../api/url.api';
 import { QRCodeModal } from '../../links/components/QRCodeModal';
 
+import { env } from '../../../config/env';
+
 const ShortenerForm: React.FC = () => {
     const [longUrl, setLongUrl] = useState('');
     const [alias, setAlias] = useState('');
@@ -74,7 +76,7 @@ const ShortenerForm: React.FC = () => {
                             <div className="flex items-center bg-[#1a120e] rounded-xl border border-[#392e28] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/50 transition-all overflow-hidden group">
                                 <div className="bg-white/5 dark:bg-slate-800/40 px-3 md:px-4 flex items-center h-14 border-r border-[#392e28] group-focus-within:border-primary/50 transition-all">
                                     <span className="text-gray-400 dark:text-gray-300 text-sm font-black tracking-tight group-focus-within:text-primary transition-colors leading-none">
-                                        {(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/
+                                        {env.getShortUrlBaseDisplay()}/
                                     </span>
                                 </div>
                                 <input
