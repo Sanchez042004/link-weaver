@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
                 </div>
 
                 <div className="mt-auto pt-8 text-xs text-slate-400 dark:text-[#54433b]">
-                    © 2023 Knot.ly Inc. All rights reserved.
+                    © {new Date().getFullYear()} Knot.ly URL Shortener. Made with ❤️ by Andrés.
                 </div>
             </div>
 
@@ -149,14 +149,6 @@ const LoginPage: React.FC = () => {
                     <p className="text-white/70 text-lg leading-relaxed">
                         Seamlessly connect your audience with your content. The most powerful link management tool for modern creators.
                     </p>
-                    <div className="mt-6 flex items-center gap-3">
-                        <div className="flex -space-x-3">
-                            <img alt="User avatar 1" className="w-10 h-10 rounded-full border-2 border-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaW75yFQPJkVv70ziIBR74VYiCTyxB3HXNGLd7N9rgNP4Q65Kmd1nIIFaEWtrQk1Yd_OJqq3rNWaoR9sXxaWgvMqwf19XlxCnE42BM4LWTkZED3R6bFv0fka3lmuJP5Oxkxi73bUjd4Z5Zq_ktS4weBZ4hFlntdER6ekukuiU2jel9Xb3XkgmLsLilgYwekJp4SgKBMcUGjgfR9XpjqqBp_Ef_d7kmZYmIP2M6aNHMSlD0fyr7qxIAsHavnWhmP5ReGxLEfH97A_dl" />
-                            <img alt="User avatar 2" className="w-10 h-10 rounded-full border-2 border-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBw8fUhWut1TS1-UGGDTwiWKBJ0-HqA25vHHNNK4Xc_NsPz307zprsirnIRksGRPbhUjXaFfgQvYoB_AlBrscPB3boVUkJAJNTbHWOjy_q0yD4rWES5Tzgsfbe_4gcE5s8q367C9rPZw36YDwGRHdW-7DUkThY7JW2nxHMfN_ZYWoJtedYujHaPs0caxahJW34Y86mjHIlGfzLAXUDn-dEzG0O-2rqAIEkweiZoDcnUDHQ0Bh9MqhOdzobfzwMXFw4jy8Q1HUhre3yz" />
-                            <img alt="User avatar 3" className="w-10 h-10 rounded-full border-2 border-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJRMDcGkVmdino3909C2M9K4CcZN21rTEg6MbmMeMj5NH7rzMRMf0gwTj0VNYw1xKv2mw1pEDBN0rXVH0bhX2Wh3G7OYp6ffVSQ_DhM0L7m6Z7VaaKcMTijiC1Gi8RjXVpIQhTmZYkb6HT3Jkb88Qi40MqPrhHotEZLXXKqm-qWhcj8KaLwEb6FGZtWk8mCwINIsbwSf5NXOaSHFIKRspNLsAscenkwkIVlRMFHQtnB_qY8DvLyp66NIQAarN44q46syy8lzKLXOon" />
-                        </div>
-                        <p className="text-white/60 text-sm font-medium">Trusted by 10k+ creators</p>
-                    </div>
                 </div>
 
                 {/* Decorative SVG Element */}

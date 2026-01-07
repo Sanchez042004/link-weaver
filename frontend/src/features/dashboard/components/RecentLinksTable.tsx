@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Url } from '../../../api/url.api';
 import Sparkline from './Sparkline';
 import Skeleton from '../../../components/ui/Skeleton';
@@ -72,6 +72,14 @@ const RecentLinksTable: React.FC<RecentLinksTableProps> = ({
     onAnalytics,
     onShowQR,
 }) => {
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    const copyToClipboard = (text: string, id: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
     if (isLoading) return <TableSkeleton />;
 
     const getLinkTrend = (url: Url) => {
@@ -160,11 +168,16 @@ const RecentLinksTable: React.FC<RecentLinksTableProps> = ({
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
-                                                    onClick={() => navigator.clipboard.writeText(url.shortUrl)}
-                                                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-border-dark/40 transition-all"
-                                                    title="Copy Link"
+                                                    onClick={() => copyToClipboard(url.shortUrl, url.id)}
+                                                    className={`p-2 rounded-lg transition-all ${copiedId === url.id
+                                                        ? 'text-primary bg-primary/10'
+                                                        : 'text-slate-400 hover:text-white hover:bg-border-dark/40'
+                                                        }`}
+                                                    title={copiedId === url.id ? "Copied!" : "Copy Link"}
                                                 >
-                                                    <span className="material-symbols-outlined text-[20px]">content_copy</span>
+                                                    <span className="material-symbols-outlined text-[20px]">
+                                                        {copiedId === url.id ? 'check' : 'content_copy'}
+                                                    </span>
                                                 </button>
                                                 <button
                                                     onClick={() => onShowQR(url)}

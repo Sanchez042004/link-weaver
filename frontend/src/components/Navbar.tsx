@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-20 items-center justify-between">
                         {/* Logo */}
-                        <Link to="/" className="hover:opacity-80 transition-opacity">
+                        <Link to="/">
                             <Logo />
                         </Link>
 
