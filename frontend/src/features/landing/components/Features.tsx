@@ -15,7 +15,7 @@ const Features: React.FC = () => {
         {
             icon: 'tune',
             title: 'Total Control',
-            description: 'Edit destinations after sharing. Expire links on specific dates. Password protect sensitive content. You are the captain.'
+            description: 'Edit destinations after sharing. Password protect sensitive content. You are the captain.'
         }
     ];
 

@@ -1,14 +1,18 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { env } from '@/config/env';
 import { JwtPayload, AuthResponse } from '@/types/auth.types';
 import { UserRepository } from '@/repositories/user.repository';
-import { ConflictError, UnauthorizedError } from '@/errors';
+import { ConflictError, UnauthorizedError, BadRequestError, NotFoundError } from '@/errors';
+import { emailService } from './email.service';
 
 export class AuthService {
     private readonly SALT_ROUNDS = 10;
 
-    constructor(private readonly userRepository: UserRepository) { }
+    constructor(
+        private readonly userRepository: UserRepository
+    ) { }
 
     /**
      * Register new user
@@ -27,12 +31,27 @@ export class AuthService {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
 
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
         // Create user
         const user = await this.userRepository.create({
             email: normalizedEmail,
             password: hashedPassword,
             name,
+            verificationToken,
+            verificationTokenExpires,
+            isVerified: false,
         });
+
+        // Send verification email (don't await to not block registration response, or await if you want to be sure)
+        // For link-weaver, we'll try to send it but not block the user if it fails (just log it)
+        try {
+            await emailService.sendVerificationEmail(user.email, user.name || '', verificationToken);
+        } catch (error) {
+            console.error('⚠️ Falló el envío del email de bienvenida:', error);
+        }
 
         // Generate token
         const token = this.generateToken({
@@ -71,6 +90,13 @@ export class AuthService {
             throw new UnauthorizedError('Usuario o contraseña inválidos');
         }
 
+        // Check if verified
+        if (!user.isVerified && env.NODE_ENV === 'production') {
+            // En desarrollo permitimos entrar sin verificar para facilitar pruebas, 
+            // pero podríamos ser más estrictos si se prefiere.
+            // throw new UnauthorizedError('Por favor verifica tu email antes de iniciar sesión');
+        }
+
         // Generate token
         const token = this.generateToken({
             userId: user.id,
@@ -85,6 +111,72 @@ export class AuthService {
                 name: user.name,
             },
         };
+    }
+
+    /**
+     * Verify email
+     */
+    public async verifyEmail(token: string): Promise<void> {
+        const user = await this.userRepository.findByVerificationToken(token);
+
+        if (!user) {
+            throw new BadRequestError('Token de verificación inválido');
+        }
+
+        if (user.verificationTokenExpires && user.verificationTokenExpires < new Date()) {
+            throw new BadRequestError('El token de verificación ha expirado');
+        }
+
+        await this.userRepository.update(user.id, {
+            isVerified: true,
+            verificationToken: null,
+            verificationTokenExpires: null,
+        });
+    }
+
+    /**
+     * Request password reset
+     */
+    public async requestPasswordReset(email: string): Promise<void> {
+        const user = await this.userRepository.findByEmail(email.toLowerCase().trim());
+
+        if (!user) {
+            // Por seguridad, no decimos si el email existe o no
+            return;
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hora
+
+        await this.userRepository.update(user.id, {
+            resetPasswordToken: resetToken,
+            resetPasswordExpires: resetExpires,
+        });
+
+        await emailService.sendPasswordResetEmail(user.email, user.name || '', resetToken);
+    }
+
+    /**
+     * Reset password
+     */
+    public async resetPassword(token: string, newPassword: string): Promise<void> {
+        const user = await this.userRepository.findByResetToken(token);
+
+        if (!user) {
+            throw new BadRequestError('Token de recuperación inválido');
+        }
+
+        if (user.resetPasswordExpires && user.resetPasswordExpires < new Date()) {
+            throw new BadRequestError('El token de recuperación ha expirado');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
+
+        await this.userRepository.update(user.id, {
+            password: hashedPassword,
+            resetPasswordToken: null,
+            resetPasswordExpires: null,
+        });
     }
 
     /**

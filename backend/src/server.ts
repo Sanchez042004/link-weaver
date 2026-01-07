@@ -1,7 +1,6 @@
 import { app } from './app';
 import { env } from '@/config/env';
 import { connectDatabase, disconnectDatabase } from '@/config/database';
-import { redisClient } from '@/config/redis';
 import { Logger } from '@/config/logger';
 
 // ... (comments)
@@ -16,15 +15,6 @@ async function startServer() {
         Logger.info('Conectando a PostgreSQL');
         await connectDatabase();
 
-        /**
-         * 2. Conectar a Redis (si está configurado)
-         */
-        if (env.REDIS_URL) {
-            Logger.info('Conectando a Redis');
-            await redisClient.connect();
-        } else {
-            Logger.info('Redis omitido (no configurado)');
-        }
 
         /**
          * 3. Iniciar servidor Express
@@ -59,7 +49,6 @@ async function startServer() {
                 Logger.info('Servidor HTTP cerrado');
                 try {
                     await disconnectDatabase();
-                    await redisClient.disconnect();
                     Logger.info('Shutdown completado correctamente');
                     process.exit(0);
                 } catch (error) {

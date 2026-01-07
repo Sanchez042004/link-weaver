@@ -28,10 +28,7 @@ const Hero: React.FC = () => {
                         <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-12 lg:gap-20 items-center translate-y-[1px]">
                             {/* Left Column: Copy */}
                             <div className="flex flex-col gap-6 lg:w-1/2">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dark border border-primary/20 w-fit">
-                                    <span className="block size-2 rounded-full bg-primary animate-pulse"></span>
-                                    <span className="text-xs font-bold text-primary uppercase tracking-wider">New: Analytics 2.0</span>
-                                </div>
+
                                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[0.95] tracking-tighter text-white">
                                     Untangle <br />
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-300">your analytics.</span>
@@ -43,10 +40,6 @@ const Hero: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
                                         <span>No credit card required</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                                        <span>GDPR Compliant</span>
                                     </div>
                                 </div>
                             </div>

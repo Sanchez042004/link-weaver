@@ -81,15 +81,16 @@ const LoginPage: React.FC = () => {
                                     required
                                 />
                                 <div
-                                    className="flex items-center justify-center pr-[15px] pl-2 cursor-pointer group"
+                                    className="flex items-center justify-center pr-[15px] pl-2 cursor-pointer group select-none"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
-                                    <span className="material-symbols-outlined text-slate-400 dark:text-[#b9a69d] group-hover:text-primary transition-colors text-[20px]">
-                                        {showPassword ? 'visibility_off' : 'visibility'}
+                                    <span className="material-symbols-outlined text-slate-400 dark:text-[#b9a69d] group-hover:text-primary transition-colors text-[20px] select-none">
+                                        {showPassword ? 'visibility' : 'visibility_off'}
                                     </span>
                                 </div>
                             </div>
                         </div>
+
 
                         {/* Error Message */}
                         {error && (

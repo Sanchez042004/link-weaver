@@ -1,7 +1,5 @@
-import { prisma } from '@/config/database';
-import { redisClient } from '@/config/redis';
 
-// Repositories
+import { prisma } from '@/config/database';
 import { UrlRepository } from '@/repositories/url.repository';
 import { ClickRepository } from '@/repositories/click.repository';
 import { UserRepository } from '@/repositories/user.repository';
@@ -26,7 +24,7 @@ const clickRepository = new ClickRepository(prisma);
 const userRepository = new UserRepository(prisma);
 
 // Services
-const cacheService = new CacheService(redisClient);
+const cacheService = new CacheService();
 const urlService = new UrlService(urlRepository, clickRepository, cacheService);
 const analyticsService = new AnalyticsService(clickRepository, urlRepository);
 const userService = new UserService(userRepository);

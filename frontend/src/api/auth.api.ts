@@ -43,6 +43,33 @@ export const authApi = {
             handleApiError(error);
             throw error;
         }
+    },
+
+    verifyEmail: async (token: string): Promise<void> => {
+        try {
+            await apiClient.get(`/auth/verify-email?token=${token}`);
+        } catch (error) {
+            handleApiError(error);
+            throw error;
+        }
+    },
+
+    forgotPassword: async (email: string): Promise<void> => {
+        try {
+            await apiClient.post('/auth/forgot-password', { email });
+        } catch (error) {
+            handleApiError(error);
+            throw error;
+        }
+    },
+
+    resetPassword: async (password: string, token: string): Promise<void> => {
+        try {
+            await apiClient.post('/auth/reset-password', { password, token });
+        } catch (error) {
+            handleApiError(error);
+            throw error;
+        }
     }
 };
 

@@ -37,9 +37,10 @@
     "geoip-lite": "^1.4.10",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "lru-cache": "^11.2.4",
     "nanoid": "^3.3.11",
+    "nodemailer": "^7.0.12",
     "prisma": "^6.0.0",
-    "redis": "^5.10.0",
     "tsc-alias": "^1.8.8",
     "typescript": "^5.9.3",
     "ua-parser-js": "^2.0.7",
@@ -47,6 +48,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/nodemailer": "^7.0.4",
     "@types/supertest": "^6.0.3",
     "cross-env": "^10.1.0",
     "dotenv-cli": "^11.0.0",

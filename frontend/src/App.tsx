@@ -9,6 +9,9 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import SettingsPage from './pages/SettingsPage';
 import ShortUrlRedirect from './pages/ShortUrlRedirect';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import PublicRoute from './features/auth/components/PublicRoute';
@@ -31,6 +34,17 @@ function App() {
         <Route path="/signup" element={
           <PublicRoute>
             <SignupPage />
+          </PublicRoute>
+        } />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/forgot-password" element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        } />
+        <Route path="/reset-password" element={
+          <PublicRoute>
+            <ResetPasswordPage />
           </PublicRoute>
         } />
 

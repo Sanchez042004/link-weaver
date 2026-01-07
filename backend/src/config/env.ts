@@ -83,6 +83,11 @@ const envSchema = z.object({
         .default('1')
         .transform((val) => parseInt(val, 10))
         .refine((val) => val >= 1 && val <= 1024, 'MACHINE_ID debe estar entre 1 y 1024'),
+
+    // SMTP User for emails
+    SMTP_USER: z.string().email().optional(),
+    // SMTP Password for emails
+    SMTP_PASS: z.string().optional(),
 });
 
 /**
@@ -101,7 +106,6 @@ const parseEnv = () => {
             MACHINE_ID: '1',
             PORT: '3000',
             DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
-            REDIS_URL: 'redis://localhost:6379',
             JWT_SECRET: 'test-secret-must-be-at-least-32-chars-long',
             FRONTEND_URL: 'http://localhost:3000',
             // Mantener NODE_ENV

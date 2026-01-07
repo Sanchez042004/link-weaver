@@ -17,8 +17,22 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-    email: z.string().email('Invalid email'),
+    email: z.string().email('Email inválido'),
     password: z.string(),
+});
+
+const forgotPasswordSchema = z.object({
+    email: z.string().email('Email inválido'),
+});
+
+const resetPasswordSchema = z.object({
+    token: z.string().min(1, 'Token requerido'),
+    password: z
+        .string()
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
+        .regex(/[0-9]/, 'Debe contener al menos un número')
+        .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial'),
 });
 
 export class AuthController {
@@ -74,6 +88,75 @@ export class AuthController {
                 success: true,
                 message: 'Login exitoso',
                 data: result,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Verify Email Endpoint
+     */
+    public verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { token } = req.query;
+
+            if (!token || typeof token !== 'string') {
+                throw new BadRequestError('Token de verificación requerido');
+            }
+
+            await this.authService.verifyEmail(token);
+
+            res.status(200).json({
+                success: true,
+                message: 'Email verificado correctamente',
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Forgot Password Endpoint
+     */
+    public forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const validation = forgotPasswordSchema.safeParse(req.body);
+
+            if (!validation.success) {
+                throw new BadRequestError('Email inválido');
+            }
+
+            await this.authService.requestPasswordReset(validation.data.email);
+
+            res.status(200).json({
+                success: true,
+                message: 'Si el email existe, se ha enviado un enlace de recuperación',
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Reset Password Endpoint
+     */
+    public resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const validation = resetPasswordSchema.safeParse(req.body);
+
+            if (!validation.success) {
+                const errorMessage = validation.error.issues.map(i => i.message).join(', ');
+                throw new BadRequestError(errorMessage);
+            }
+
+            const { token, password } = validation.data;
+
+            await this.authService.resetPassword(token, password);
+
+            res.status(200).json({
+                success: true,
+                message: 'Contraseña restablecida correctamente',
             });
         } catch (error) {
             next(error);
