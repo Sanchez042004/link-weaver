@@ -22,10 +22,22 @@ const ShortUrlRedirect: React.FC = () => {
     }, [alias]);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-            <div className="flex flex-col items-center gap-4 animate-pulse">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-slate-600 dark:text-slate-400 font-medium">Redirecting you...</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-pattern relative overflow-hidden">
+            {/* Background Decor */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[600px] bg-primary/5 rounded-full blur-[120px]"></div>
+            </div>
+
+            <div className="flex flex-col items-center gap-8 relative z-10 p-8">
+                {/* Logo/Icon */}
+                <div className="size-16 bg-[#2e201a] border border-[#ec5b13]/20 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-900/20">
+                    <span className="material-symbols-outlined text-[32px] text-primary animate-pulse">link</span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-[#392e28] border-t-primary rounded-full animate-spin"></div>
+                    <p className="text-gray-400 font-medium text-lg tracking-wide">Redirecting to destination...</p>
+                </div>
             </div>
         </div>
     );
