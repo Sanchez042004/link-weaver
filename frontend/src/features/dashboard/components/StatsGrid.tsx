@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Url } from '../../../api/url.api';
+import { env } from '../../../config/env';
 import Skeleton from '../../../components/ui/Skeleton';
 
 interface StatsCardProps {
@@ -130,7 +131,7 @@ const StatsGrid: React.FC<StatsGridProps> = ({ urls, isLoading, comparison, filt
                 {topPerformer ? (
                     <>
                         <p className="text-white text-xl sm:text-2xl font-bold mt-1 font-display hover:text-primary transition-colors truncate block relative z-10">
-                            {(import.meta.env.VITE_SHORT_URL_BASE || 'localhost:3001').replace(/^https?:\/\//, '').replace(/\/$/, '')}/{topPerformer.alias}
+                            {env.getShortUrlBaseDisplay()}/{topPerformer.alias}
                         </p>
                         <p className="text-slate-500 text-sm mt-1 relative z-10">{topPerformer.clicks} total clicks</p>
                     </>
