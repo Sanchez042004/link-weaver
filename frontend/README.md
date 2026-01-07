@@ -1,147 +1,48 @@
-# 🎨 Link Weaver - Frontend
+# 🎨 Knot.ly - Frontend SPA
 
-Frontend moderno para Link Weaver, construido con React, TypeScript y TailwindCSS.
+Esta es la interfaz de usuario de Knot.ly, una Single Page Application (SPA) moderna construida para ofrecer una gestión de enlaces fluida y analíticas visuales de alto impacto.
 
-## 🚀 Inicio Rápido
+## 🚀 Experiencia de Usuario (UX) y Características
+
+-   ⚡ **Powered by React 19**: Aprovechando las últimas mejoras de rendimiento y manejo de estado de React.
+-   🌓 **Dynamic Theming**: Soporte nativo para modo claro y oscuro con transiciones suaves, respetando las preferencias del sistema.
+-   📱 **Mobile-First Design**: Layout completamente responsive construido con TailwindCSS, garantizando una experiencia óptima en cualquier tamaño de pantalla.
+-   📈 **Data Visualization**: Integración de **Recharts** para transformar datos crudos de clics en gráficas interactivas y comprensibles.
+
+## 🏗️ Organización del Código: Feature-Based Structure
+
+El proyecto sigue una estructura organizada por "features" o dominios, facilitando la escalabilidad y el mantenimiento:
+
+```
+frontend/src/
+├── api/            # Configuración de Axios e interceptores
+├── components/     # Componentes UI reutilizables (Botones, Inputs, etc.)
+├── features/       # Lógica encapsulada por dominio
+│   ├── auth/       # Registro, Login, Gestión de JWT
+│   ├── dashboard/  # Panel de control de usuario
+│   └── links/      # Creación y edición de URLs
+├── hooks/          # Custom hooks para lógica compartida
+└── layouts/        # Esqueletos de página (Navbars, Footers)
+```
+
+## ⚡ Optimizaciones de Rendimiento
+
+-   **Code Splitting**: Implementación de `React.lazy` y `Suspense` para reducir el tamaño del bundle inicial y acelerar el tiempo de carga.
+-   **Vite Engine**: Utilización de Vite para un entorno de desarrollo instantáneo y builds de producción altamente optimizados.
+-   **Strict Typing**: Uso de TypeScript en modo estricto para eliminar errores en tiempo de ejecución y mejorar la documentación del código.
+
+## 🛠️ Stack Tecnológico
+
+-   **Framework**: React 19 + TypeScript
+-   **Routing**: React Router 7
+-   **Styling**: TailwindCSS
+-   **HTTP Client**: Axios
+-   **Icons**: React Icons
+
+## 📦 Scripts de Trabajo
 
 ```bash
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
-echo "VITE_API_URL=http://localhost:3001/api" > .env
-
-# Iniciar servidor de desarrollo
-npm run dev
+npm run dev       # Servidor de desarrollo con HMR
+npm run build     # Compilación optimizada para despliegue
+npm run lint      # Análisis estático de código
 ```
-
-La aplicación estará disponible en `http://localhost:3000`
-
-## 📁 Estructura del Proyecto
-
-```
-frontend/
-├── src/
-│   ├── api/              # Clientes API (axios)
-│   ├── assets/           # Imágenes, fuentes, etc.
-│   ├── components/       # Componentes reutilizables
-│   ├── context/          # Context API (Auth, Theme)
-│   ├── features/         # Features organizados por dominio
-│   │   ├── auth/         # Autenticación
-│   │   ├── dashboard/    # Dashboard
-│   │   ├── landing/      # Página de inicio
-│   │   └── links/        # Gestión de enlaces
-│   ├── hooks/            # Custom hooks
-│   ├── layouts/          # Layouts de páginas
-│   ├── pages/            # Páginas principales
-│   ├── App.tsx           # Componente raíz
-│   └── main.tsx          # Punto de entrada
-├── public/               # Archivos estáticos
-├── index.html            # HTML base
-├── vite.config.ts        # Configuración de Vite
-├── tailwind.config.js    # Configuración de Tailwind
-└── tsconfig.json         # Configuración de TypeScript
-```
-
-## 🛠️ Tecnologías
-
-- **React 19** - Biblioteca UI
-- **TypeScript** - Type safety
-- **Vite** - Build tool ultra-rápido
-- **TailwindCSS** - Utility-first CSS
-- **React Router v7** - Routing
-- **Axios** - Cliente HTTP
-- **Recharts** - Gráficos y visualizaciones
-- **React Icons** - Iconos
-
-## 📝 Scripts Disponibles
-
-```bash
-npm run dev       # Servidor de desarrollo
-npm run build     # Build de producción
-npm run preview   # Preview del build
-npm run lint      # Ejecutar ESLint
-```
-
-## 🎨 Características
-
-- ✅ **Modo Oscuro** - Tema claro/oscuro automático
-- ✅ **Responsive** - Optimizado para móvil, tablet y desktop
-- ✅ **Animaciones** - Transiciones suaves
-- ✅ **Accesibilidad** - Siguiendo mejores prácticas
-- ✅ **Type-Safe** - TypeScript en todo el proyecto
-- ✅ **Code Splitting** - Carga optimizada
-
-## ⚙️ Configuración
-
-### Variables de Entorno
-
-Crea un archivo `.env` en la raíz del proyecto:
-
-```env
-VITE_API_URL=http://localhost:3001/api
-```
-
-### Build de Producción
-
-```bash
-npm run build
-```
-
-Los archivos compilados estarán en `/dist` listos para ser desplegados.
-
-### Despliegue
-
-El frontend es una SPA estática que puede ser desplegada en:
-
-- **Vercel** (recomendado)
-- **Netlify**
-- **GitHub Pages**
-- **AWS S3 + CloudFront**
-- Cualquier servidor web estático
-
-## 🎯 Mejores Prácticas
-
-- Componentes funcionales con hooks
-- TypeScript estricto
-- Organización por features
-- Custom hooks para lógica reutilizable
-- Context API para estado global
-- Lazy loading de rutas
-
-## 📦 Dependencias Principales
-
-```json
-{
-  "react": "^19.2.0",
-  "react-router-dom": "^7.11.0",
-  "axios": "^1.13.2",
-  "tailwindcss": "^3.4.17",
-  "recharts": "^3.6.0"
-}
-```
-
-## 🐛 Troubleshooting
-
-### Error: Cannot connect to API
-
-Verifica que:
-1. El backend esté corriendo en `http://localhost:3001`
-2. La variable `VITE_API_URL` esté configurada correctamente
-3. No haya problemas de CORS
-
-### Build falla
-
-```bash
-# Limpiar caché y reinstalar
-rm -rf node_modules dist
-npm install
-npm run build
-```
-
-## 📚 Recursos
-
-- [React Documentation](https://react.dev/)
-- [Vite Documentation](https://vitejs.dev/)
-- [TailwindCSS Documentation](https://tailwindcss.com/)
-- [TypeScript Documentation](https://www.typescriptlang.org/)

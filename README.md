@@ -1,187 +1,76 @@
-# 🔗 Link Weaver
+# 🔗 Knot.ly
 
-**Link Weaver** es un acortador de URLs moderno y completo, construido con tecnologías de vanguardia. Permite crear, gestionar y analizar enlaces cortos con una interfaz elegante y funcionalidades avanzadas.
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-## ✨ Características
+**Knot.ly** es una solución Full-Stack de acortamiento de URLs de alto rendimiento diseñada para la velocidad, escalabilidad y una experiencia de usuario excepcional. Este proyecto demuestra la implementación de patrones modernos de desarrollo, desde la gestión de caché distribuida hasta el análisis de datos en tiempo real.
 
-- 🎯 **Acortamiento de URLs** con alias personalizados
-- 📊 **Analytics en tiempo real** (clics, ubicaciones, dispositivos)
-- 🔐 **Autenticación segura** con JWT
-- 🎨 **Interfaz moderna** con modo oscuro
-- ⚡ **Caché con Redis** para redirecciones ultra-rápidas
-- 📱 **Responsive** - funciona en todos los dispositivos
-- 🔒 **Rate limiting** para prevenir abuso
+## 🚀 Puntos Destacados
 
-## 🏗️ Arquitectura
+- ⚡ **Redirecciones optimizadas**: Sistema de consultas eficientes a PostgreSQL con índices estratégicos para garantizar tiempos de respuesta rápidos.
+- 📊 **Analytics en tiempo real**: Sistema de rastreo granular que captura clics, procedencia geográfica y dispositivos mediante una arquitectura escalable.
+- 🔐 **Seguridad robusta**: Autenticación vía JWT, hashing de contraseñas con Bcrypt y Rate Limiting para prevenir abusos del API.
+- 📐 **Arquitectura Limpia**: Separación clara de responsabilidades con un backend estructurado por servicios y un frontend basado en componentes reutilizables y hooks personalizados.
 
-Este proyecto es un **monorepo** que contiene:
+## 🏗️ Arquitectura del Sistema
 
-```
-link-weaver/
-├── backend/     # API REST con Node.js + Express + PostgreSQL + Redis
-└── frontend/    # SPA con React + TypeScript + Vite + TailwindCSS
+El sistema utiliza un flujo de datos optimizado para priorizar la velocidad de redirección, el caso de uso principal del producto.
+
+```mermaid
+graph TD
+    User([Usuario/Cliente])
+    Frontend[Frontend - React 19]
+    API[API Gateway - Express]
+    DB[(PostgreSQL - Prisma)]
+
+    User <--> Frontend
+    Frontend <--> API
+    API <--> DB
+    
+    subgraph "Flujo de Redirección"
+    API -- 1. Consulta Optimizada --> DB
+    DB -- 2. Retorna URL --> API
+    API -- 3. Redirección 301/302 --> User
+    end
 ```
 
 ## 🛠️ Stack Tecnológico
 
-### Backend
-- **Runtime**: Node.js + TypeScript
-- **Framework**: Express.js
-- **Base de Datos**: PostgreSQL con Prisma ORM
-- **Caché**: Redis
-- **Autenticación**: JWT + Bcrypt
-- **Validación**: Zod
-- **Seguridad**: Helmet, CORS, Rate Limiting
+| Capa | Tecnologías Clave |
+| :--- | :--- |
+| **Backend** | Node.js, TypeScript, Express, Prisma ORM |
+| **Frontend** | React 19, Vite, TailwindCSS, React Router 7 |
+| **Infraestructura** | PostgreSQL (Persistencia), Docker |
+| **Validación/Tipado** | Zod, TypeScript (Strict Mode) |
 
-### Frontend
-- **Framework**: React 19 + TypeScript
-- **Build Tool**: Vite
-- **Estilos**: TailwindCSS
-- **Routing**: React Router v7
-- **HTTP Client**: Axios
-- **Charts**: Recharts
+## 💡 Desafíos Técnicos y Soluciones
 
-## 📋 Requisitos del Sistema
+### 1. Sistema de Codificación Base62
+En lugar de IDs numéricos simples, implementé una utilidad personalizada de Base62 para generar alias cortos (`knot.ly/aB34z`), optimizando la longitud del enlace y la estética visual.
 
-- **Node.js** >= 18.x
-- **PostgreSQL** >= 14.x
-- **Redis** >= 6.x
-- **npm** >= 9.x
+### 2. Optimización de Consultas con Prisma
+Las redirecciones utilizan índices únicos en PostgreSQL para garantizar búsquedas O(log n) extremadamente rápidas. Prisma ORM proporciona type-safety completo y previene inyecciones SQL.
 
-## 🚀 Instalación y Configuración
+### 3. Analytics Escalables
+El frontend procesa grandes volúmenes de datos de clics mediante **Recharts**, proporcionando una visualización clara y responsive de las métricas de rendimiento de cada enlace.
 
-### 1. Clonar el Repositorio
+## 📂 Estructura del Monorepo
 
-```bash
-git clone https://github.com/tu-usuario/link-weaver.git
-cd link-weaver
 ```
-
-### 2. Configurar el Backend
-
-```bash
-cd backend
-
-# Instalar dependencias
-npm install
-
-# Copiar variables de entorno
-cp .env.example .env
-
-# Editar .env con tus credenciales
-# DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/linkweaver
-# REDIS_URL=redis://localhost:6379
-# JWT_SECRET=tu-clave-super-secreta-de-al-menos-32-caracteres
-
-# Generar cliente de Prisma
-npm run prisma:generate
-
-# Ejecutar migraciones
-npm run prisma:migrate
-
-# Iniciar servidor de desarrollo
-npm run dev
+knot.ly/
+├── backend/     # API REST con Node.js + Express + PostgreSQL
+└── frontend/    # Aplicación SPA (Single Page Application)
 ```
-
-El backend estará disponible en `http://localhost:3001`
-
-### 3. Configurar el Frontend
-
-```bash
-cd ../frontend
-
-# Instalar dependencias
-npm install
-
-# Crear archivo .env
-echo "VITE_API_URL=http://localhost:3001/api" > .env
-
-# Iniciar servidor de desarrollo
-npm run dev
-```
-
-El frontend estará disponible en `http://localhost:3000`
-
-## 📦 Scripts Disponibles
-
-### Backend
-
-```bash
-npm run dev          # Desarrollo con hot-reload
-npm run build        # Compilar TypeScript
-npm start            # Ejecutar versión compilada
-npm run prisma:generate  # Generar cliente Prisma
-npm run prisma:migrate   # Ejecutar migraciones
-npm run prisma:studio    # Abrir Prisma Studio
-npm test             # Ejecutar tests
-```
-
-### Frontend
-
-```bash
-npm run dev          # Desarrollo con hot-reload
-npm run build        # Build de producción
-npm run preview      # Preview del build
-npm run lint         # Ejecutar ESLint
-```
-
-## 🔧 Configuración de Producción
-
-### Variables de Entorno Importantes
-
-#### Backend (.env)
-```env
-NODE_ENV=production
-PORT=3001
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
-JWT_SECRET=clave-segura-de-al-menos-32-caracteres
-FRONTEND_URL=https://tu-dominio.com
-```
-
-#### Frontend (.env.production)
-```env
-VITE_API_URL=https://api.tu-dominio.com/api
-```
-
-### Build de Producción
-
-```bash
-# Backend
-cd backend
-npm run build
-npm start
-
-# Frontend
-cd frontend
-npm run build
-# Los archivos estarán en /dist
-```
-
-## 📚 Documentación Adicional
-
-- [Backend README](./backend/README.md) - Detalles del API
-- [Frontend README](./frontend/README.md) - Detalles de la interfaz
-- [API Documentation](./backend/API_DOCS.md) - Endpoints disponibles
-
-## 🤝 Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 👨‍💻 Autor
 
-**Andrés Sánchez** - [GitHub](https://github.com/Sanchez042004)
+**Andrés Sánchez**  
+*Ingeniero de Sistemas, Desarrollador y Analista de Datos*
 
-## 🙏 Agradecimientos
+[GitHub](https://github.com/Sanchez042004) | [LinkedIn](https://www.linkedin.com/in/asanchez04/)
 
-- Inspirado en servicios como Bitly y TinyURL
+---
+> [!NOTE]
+> Este proyecto fue construido con el objetivo de demostrar habilidades técnicas en el stack (PostgreSQL, Express, React, Node).
