@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { BackendStatusProvider } from './context/BackendStatusContext';
+import { ServerWakeUpNotification } from './components/ui/ServerWakeUpNotification';
 
 import DashboardPage from './pages/DashboardPage';
 import LinkDetailsPage from './pages/LinkDetailsPage';
@@ -20,61 +22,64 @@ import PublicRoute from './features/auth/components/PublicRoute';
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/" element={
-          <PublicRoute>
-            <LandingPage />
-          </PublicRoute>
-        } />
-        <Route path="/features" element={<FeaturesPage />} />
-        <Route path="/login" element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        } />
-        <Route path="/signup" element={
-          <PublicRoute>
-            <SignupPage />
-          </PublicRoute>
-        } />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/forgot-password" element={
-          <PublicRoute>
-            <ForgotPasswordPage />
-          </PublicRoute>
-        } />
-        <Route path="/reset-password" element={
-          <PublicRoute>
-            <ResetPasswordPage />
-          </PublicRoute>
-        } />
+      <BackendStatusProvider>
+        <ServerWakeUpNotification />
+        <Routes>
+          <Route path="/" element={
+            <PublicRoute>
+              <LandingPage />
+            </PublicRoute>
+          } />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/login" element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          } />
+          <Route path="/signup" element={
+            <PublicRoute>
+              <SignupPage />
+            </PublicRoute>
+          } />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/forgot-password" element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          } />
+          <Route path="/reset-password" element={
+            <PublicRoute>
+              <ResetPasswordPage />
+            </PublicRoute>
+          } />
 
-        {/* Protected Routes */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/analytics/:alias" element={
-          <ProtectedRoute>
-            <LinkDetailsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        } />
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/analytics/:alias" element={
+            <ProtectedRoute>
+              <LinkDetailsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          } />
 
-        {/* Error Pages */}
-        <Route path="/404" element={<NotFoundPage />} />
+          {/* Error Pages */}
+          <Route path="/404" element={<NotFoundPage />} />
 
-        {/* Catch-all Short URL Redirect */}
-        <Route path="/:alias" element={<ShortUrlRedirect />} />
+          {/* Catch-all Short URL Redirect */}
+          <Route path="/:alias" element={<ShortUrlRedirect />} />
 
-        {/* Catch-all general 404 */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+          {/* Catch-all general 404 */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </BackendStatusProvider>
     </AuthProvider>
   );
 }
