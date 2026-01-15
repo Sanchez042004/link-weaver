@@ -8,6 +8,7 @@ interface BackendStatusContextType {
 const BackendStatusContext = createContext<BackendStatusContextType | undefined>(undefined);
 
 export const BackendStatusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [hasConnected, setHasConnected] = useState(false);
     const [isBackendWakingUp, setIsBackendWakingUp] = useState(false);
     const activeRequests = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
@@ -19,8 +20,11 @@ export const BackendStatusProvider: React.FC<{ children: React.ReactNode }> = ({
             config.requestId = requestId;
 
             // Start a timer. If request takes longer than 1.5s, assume waking up.
+            // Only show the notification if we haven't successfully connected yet.
             const timeoutId = setTimeout(() => {
-                setIsBackendWakingUp(true);
+                if (!hasConnected) {
+                    setIsBackendWakingUp(true);
+                }
             }, 1500);
 
             activeRequests.current.set(requestId, timeoutId);
@@ -37,6 +41,7 @@ export const BackendStatusProvider: React.FC<{ children: React.ReactNode }> = ({
                 // If no more active requests are pending (or just on any success), hide notification
                 // For better UX during wake up, if one succeeds, we assume it's up.
                 setIsBackendWakingUp(false);
+                setHasConnected(true);
                 return response;
             },
             (error) => {
@@ -48,6 +53,7 @@ export const BackendStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 
                 // Even on error, we stop showing "waking up" because we got a response (even if error)
                 setIsBackendWakingUp(false);
+                setHasConnected(true);
                 return Promise.reject(error);
             }
         );
