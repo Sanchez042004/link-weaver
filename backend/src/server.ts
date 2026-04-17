@@ -2,6 +2,7 @@ import { app } from './app';
 import { env } from '@/config/env';
 import { connectDatabase, disconnectDatabase } from '@/config/database';
 import { Logger } from '@/config/logger';
+import { startKeepAlive } from '@/utils/keepAlive';
 
 // ... (comments)
 
@@ -30,6 +31,11 @@ async function startServer() {
             Logger.info(`🔗 API Root: http://localhost:${PORT}/`);
             Logger.info(`💓 Health:   http://localhost:${PORT}/health`);
             Logger.info('=============================================');
+
+            // Keep-alive: evita que Koyeb pause el servidor por inactividad
+            if (env.NODE_ENV === 'production') {
+                startKeepAlive(PORT);
+            }
         });
 
         server.on('error', (err: any) => {
