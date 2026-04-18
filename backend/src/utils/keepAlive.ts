@@ -1,5 +1,4 @@
 import { Logger } from '@/config/logger';
-import { env } from '@/config/env';
 
 const INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
 
@@ -7,29 +6,21 @@ const INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
  * Inicia un cron interno que hace un ping al propio endpoint /health
  * cada 10 minutos para evitar que Koyeb pause el servidor por inactividad.
  *
- * IMPORTANTE: Koyeb mide inactividad por tráfico externo, por lo que el ping
- * debe hacerse a la URL pública del servicio (BASE_URL), NO a localhost.
- * Un ping a localhost no cuenta como tráfico externo para la plataforma.
- *
- * Como respaldo adicional, se recomienda usar un servicio externo como
- * cron-job.org o UptimeRobot para hacer ping a /health cada 5 minutos.
+ * NOTA: Para que Koyeb no entre en pausa, el ping real lo debe hacer
+ * un servicio externo (como cron-job.org) apuntando al dominio de Koyeb.
  *
  * @param port - Puerto en el que está escuchando el servidor Express (fallback)
  */
 export function startKeepAlive(port: number): void {
-    // Preferir la URL pública (BASE_URL) porque Koyeb necesita tráfico externo.
-    // Si BASE_URL no está definida, caemos a localhost como último recurso.
-    const publicUrl = env.BASE_URL?.replace(/\/$/, '');
+    // Ya no usamos env.BASE_URL aquí porque BASE_URL debe ser el frontend
+    // para generar los links acortados correctamente.
+    // En su lugar usamos una variable separada BACKEND_URL si existe, o localhost.
+    const publicUrl = process.env.BACKEND_URL?.replace(/\/$/, '');
     const healthUrl = publicUrl
         ? `${publicUrl}/health`
         : `http://localhost:${port}/health`;
 
     Logger.info(`💓 Keep-alive activado → ping cada 10 min a ${healthUrl}`);
-
-    if (!publicUrl) {
-        Logger.warn('💓 Keep-alive: BASE_URL no configurada. Usando localhost como fallback.');
-        Logger.warn('💓 Para que Koyeb no pause el servidor, configura BASE_URL con la URL pública del servicio.');
-    }
 
     const ping = async () => {
         try {
