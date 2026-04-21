@@ -20,8 +20,8 @@ const SettingsPage: React.FC = () => {
     };
 
     return (
-        <DashboardLayout noScroll={true}>
-            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center font-body">
+        <DashboardLayout noScroll={false}>
+            <div className="flex flex-col items-center justify-start md:justify-center font-body min-h-full">
                 <div className="max-w-2xl w-full space-y-8 py-12">
                     {/* Page Header */}
                     <div className="text-center md:text-left">

@@ -10,6 +10,7 @@ export const useLinkAnalytics = (alias: string | undefined, days: number = 7) =>
         if (!alias) return;
         setLoading(true);
         setError(null);
+        setData(null); // Clear previous data
         try {
             const result = await analyticsApi.getByAlias(alias, days);
             setData(result);
@@ -35,6 +36,8 @@ export const useGeneralAnalytics = (days: number = 7) => {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
+            // Clear previous data to avoid showing stale stats during transition
+            setData(null);
             try {
                 const result = await analyticsApi.getGeneral(days);
                 setData(result);

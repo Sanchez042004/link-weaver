@@ -39,12 +39,12 @@ const ShortenerForm: React.FC = () => {
     };
 
     return (
-        <div className="w-full max-w-2xl bg-surface rounded-xl border border-white/15 shadow-[0_0_40px_-10px_rgba(255,255,255,0.08)] p-6 md:p-8 relative">
-            <form className="space-y-6" onSubmit={(e) => handleSubmit(e)}>
-                <div className="flex flex-col gap-5">
+        <div className="w-full max-w-2xl bg-surface rounded-xl border border-white/15 shadow-[0_0_40px_-10px_rgba(255,255,255,0.08)] p-4 md:p-8 relative">
+            <form className="space-y-4 md:space-y-6" onSubmit={(e) => handleSubmit(e)}>
+                <div className="flex flex-col gap-3 md:gap-5">
                     {/* Destination Input */}
                     <div className="space-y-1.5 w-full">
-                        <label className="text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Destination</label>
+                        <label className="text-[10px] md:text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Destination</label>
                         <div className="relative group">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] text-[18px]">link</span>
                             <input 
@@ -59,7 +59,7 @@ const ShortenerForm: React.FC = () => {
                     </div>
                     {/* Alias Input */}
                     <div className="space-y-1.5 w-full">
-                        <label className="text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Alias <span className="text-[#8a8a8a]/60 lowercase font-normal tracking-normal">(Optional)</span></label>
+                        <label className="text-[10px] md:text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Alias <span className="text-[#8a8a8a]/60 lowercase font-normal tracking-normal">(Optional)</span></label>
                         <div className="flex rounded-lg border border-border-secondary bg-[#0e0e0e] focus-within:ring-1 focus-within:ring-accent focus-within:border-accent overflow-hidden group transition-colors">
                             <div className="bg-[#1c1b1b] px-3 flex items-center border-r border-border-secondary text-[#8a8a8a] text-sm font-mono whitespace-nowrap pt-1">
                                 {env.getShortUrlBaseDisplay()}/
@@ -77,17 +77,17 @@ const ShortenerForm: React.FC = () => {
 
                 {/* Error Banner */}
                 {error && (
-                    <div className="p-3 mt-4 rounded-lg bg-danger/10 text-danger text-[13px] font-medium border border-danger/20 flex items-center gap-2">
+                    <div className="p-3 mt-2 md:mt-4 rounded-lg bg-danger/10 text-danger text-[13px] font-medium border border-danger/20 flex items-center gap-2">
                         <span className="material-symbols-outlined text-[18px]">error</span>
                         {error}
                     </div>
                 )}
 
                 {/* Result Area */}
-                <div className={`transition-all duration-500 ease-out overflow-hidden ${result ? 'max-h-96 opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
+                <div className={`transition-all duration-500 ease-out overflow-hidden ${result ? 'max-h-96 opacity-100 mt-4 md:mt-6' : 'max-h-0 opacity-0'}`}>
                     {result && (
-                        <div className="bg-[#0e0e0e] rounded-lg border border-accent/20 p-3 flex flex-col sm:flex-row items-center gap-3">
-                            <div className="flex items-center gap-3 w-full flex-1 min-w-0 bg-[#1c1b1b] rounded-lg p-3 border border-border-secondary">
+                        <div className="bg-[#0e0e0e] rounded-lg border border-accent/20 p-2 sm:p-3 flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+                            <div className="flex items-center gap-3 w-full flex-1 min-w-0 bg-[#1c1b1b] rounded-lg p-2 sm:p-3 border border-border-secondary">
                                 <div className="size-6 rounded-full bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
                                     <span className="material-symbols-outlined text-[16px]">check</span>
                                 </div>
@@ -96,7 +96,7 @@ const ShortenerForm: React.FC = () => {
                                         href={result?.shortUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[14px] font-mono text-[#e2e2e2] hover:text-accent transition-colors truncate block w-full"
+                                        className="text-[13px] md:text-[14px] font-mono text-[#e2e2e2] hover:text-accent transition-colors truncate block w-full"
                                     >
                                         {result?.shortUrl}
                                     </a>
@@ -107,7 +107,7 @@ const ShortenerForm: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsQRModalOpen(true)}
-                                    className="h-[42px] px-3 rounded-lg text-[#8a8a8a] hover:text-[#e2e2e2] hover:bg-surface-hover border border-transparent transition-all flex items-center justify-center flex-shrink-0"
+                                    className="h-[38px] md:h-[42px] px-3 rounded-lg text-[#8a8a8a] hover:text-[#e2e2e2] hover:bg-surface-hover border border-transparent transition-all flex items-center justify-center flex-shrink-0"
                                     title="QR Code"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
@@ -116,7 +116,7 @@ const ShortenerForm: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={handleCopy}
-                                    className={`h-[42px] px-4 rounded-lg font-medium text-[13px] flex items-center justify-center gap-1.5 transition-all flex-shrink-0 whitespace-nowrap ${copied ? 'bg-accent/20 text-accent border border-accent/30' : 'bg-surface-hover text-[#e2e2e2] border border-border-secondary hover:bg-[#e2e2e2] hover:text-[#0a0a0a]'}`}
+                                    className={`h-[38px] md:h-[42px] px-4 rounded-lg font-medium text-[12px] md:text-[13px] flex items-center justify-center gap-1.5 transition-all flex-shrink-0 whitespace-nowrap ${copied ? 'bg-accent/20 text-accent border border-accent/30' : 'bg-surface-hover text-[#e2e2e2] border border-border-secondary hover:bg-[#e2e2e2] hover:text-[#0a0a0a]'}`}
                                 >
                                     <span className="material-symbols-outlined text-[16px]">
                                         {copied ? 'check_circle' : 'content_copy'}
@@ -129,9 +129,9 @@ const ShortenerForm: React.FC = () => {
                 </div>
 
                 {/* Action */}
-                <div className="flex justify-end pt-5 border-t border-border-primary mt-6">
+                <div className="flex justify-end pt-4 md:pt-5 border-t border-border-primary mt-4 md:mt-6">
                     <button 
-                        className="bg-accent text-white hover:opacity-90 px-6 py-2.5 rounded-lg text-[13px] font-semibold transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+                        className="bg-accent text-white hover:opacity-90 px-6 py-2 md:py-2.5 rounded-lg text-[13px] font-semibold transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
                         type="submit"
                         disabled={isLoading}
                     >

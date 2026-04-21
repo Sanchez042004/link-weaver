@@ -6,39 +6,50 @@ const ShortUrlRedirect: React.FC = () => {
 
     useEffect(() => {
         if (alias && alias.toLowerCase() !== '404') {
-            // Obtener la URL del API desde las variables de entorno
-            // Importante: VITE_API_URL termina en /api (ej: ...onrender.com/api)
-            // La ruta de redirección en el backend suele estar en la RAÍZ del servidor Express 
-            // (fuera de /api) para ser más corta, pero según nuestro app.ts actual:
-            // app.get('/:alias', redirectController.redirect);
-
-            // Así que construimos la URL de redirección base (sin el /api)
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
             const serverBaseUrl = apiUrl.replace(/\/api$/, '');
 
-            // Redirigir al backend para procesar el clic
-            window.location.href = `${serverBaseUrl}/${alias}`;
+            // Redirigir al backend tras un breve delay para que se aprecie la marca
+            const timer = setTimeout(() => {
+                window.location.href = `${serverBaseUrl}/${alias}`;
+            }, 1800);
+
+            return () => clearTimeout(timer);
         }
     }, [alias]);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background relative overflow-hidden">
-            {/* Background Decor */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[600px] bg-accent/5 rounded-full blur-[120px]"></div>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-[#e2e2e2] relative overflow-hidden font-inter">
+            {/* Ambient Background */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-30 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#5e6ad2]/10 via-transparent to-transparent"></div>
             </div>
+ 
+            <div className="relative z-10 flex flex-col items-center gap-16">
+                {/* Logo Group with Border Beam */}
+                <div className="relative">
+                    {/* The Border Beam Container */}
+                    <div className="relative size-24 bg-[#0a0a0a] rounded-2xl flex items-center justify-center border border-white/5 overflow-hidden group">
+                        {/* The Beam Effect */}
+                        <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0%,transparent_30%,#5e6ad2_50%,transparent_70%,transparent_100%)] animate-[spin_3s_linear_infinite]"></div>
+                        
+                        {/* Inner Mask to keep border thin */}
+                        <div className="absolute inset-[1.5px] bg-[#0a0a0a] rounded-[14px] z-10"></div>
 
-            <div className="flex flex-col items-center gap-8 relative z-10 p-8">
-                {/* Logo/Icon */}
-                <div className="size-16 bg-surface border border-border-primary rounded-2xl flex items-center justify-center shadow-xl shadow-background">
-                    <span className="material-symbols-outlined text-[32px] text-accent animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>
-                        link
-                    </span>
+                        {/* The Logo */}
+                        <img 
+                            src="/logo-imagen.png" 
+                            alt="Knotly" 
+                            className="w-12 h-auto relative z-20 opacity-95 drop-shadow-[0_0_15px_rgba(94,106,210,0.4)]" 
+                        />
+                    </div>
                 </div>
 
+                {/* Refined Status Text */}
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-4 border-surface-hover border-t-accent rounded-full animate-spin"></div>
-                    <p className="text-[#8a8a8a] font-mono text-sm tracking-widest uppercase font-bold">Redirecting...</p>
+                    <p className="text-[11px] font-medium tracking-[0.5em] uppercase text-[#e2e2e2] opacity-80">
+                        Redirecting to destination
+                    </p>
                 </div>
             </div>
         </div>

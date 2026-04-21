@@ -40,7 +40,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     // Define monolithic button styles
     const buttonStyles = {
-        danger: 'bg-danger/10 border border-danger/20 text-danger hover:bg-danger hover:text-white text-xs',
+        danger: 'bg-danger/10 border border-danger text-danger hover:bg-danger hover:text-white text-xs',
         warning: 'bg-surface-hover border border-border-secondary text-[#e2e2e2] hover:bg-[#e2e2e2] hover:text-[#0a0a0a] text-xs',
         info: 'bg-accent hover:opacity-90 text-white text-xs border border-transparent'
     };

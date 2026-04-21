@@ -65,10 +65,10 @@ const RecentLinksTable: React.FC<RecentLinksTableProps> = ({
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-surface/50 border-b border-border-primary">
-                            <th className="px-6 py-3 text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold">Alias / Destination</th>
-                            <th className="px-6 py-3 text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold">Trend</th>
-                            <th className="px-6 py-3 text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold text-right">Clicks</th>
-                            <th className="px-6 py-3 w-10"></th>
+                            <th className="px-4 md:px-6 py-3 text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold">Alias / Destination</th>
+                            <th className="hidden sm:table-cell px-6 py-3 text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold">Trend</th>
+                            <th className="px-4 md:px-6 py-3 text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold text-right">Clicks</th>
+                            <th className="px-4 md:px-6 py-3 w-10"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border-primary">
@@ -78,28 +78,28 @@ const RecentLinksTable: React.FC<RecentLinksTableProps> = ({
                             
                             return (
                                 <tr key={url.id} className="h-[44px] hover:bg-surface-hover transition-colors group relative cursor-pointer" onClick={() => onAnalytics(url.alias)}>
-                                    <td className="px-6 py-2">
+                                    <td className="px-4 md:px-6 py-2">
                                         <div className="flex flex-col">
-                                            <span className="text-[13px] font-medium font-mono text-text-primary group-hover:text-accent transition-colors">
+                                            <span className="text-[13px] font-medium font-mono text-text-primary group-hover:text-accent transition-colors truncate max-w-[140px] sm:max-w-none">
                                                 {env.getShortUrlBaseDisplay()}/{url.alias}
                                             </span>
-                                            <span className="text-[11px] text-text-muted truncate max-w-xs group-hover:text-text-secondary transition-colors" onClick={(e) => e.stopPropagation()}>
+                                            <span className="text-[10px] md:text-[11px] text-text-muted truncate max-w-[120px] sm:max-w-xs group-hover:text-text-secondary transition-colors" onClick={(e) => e.stopPropagation()}>
                                                 <a href={url.longUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
                                                     {url.longUrl.replace(/^https?:\/\//, '')}
                                                 </a>
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-2">
+                                    <td className="hidden sm:table-cell px-6 py-2">
                                         <div className="w-[60px] h-[15px]">
                                             <Sparkline data={trendData} color={isPositive ? '#5e6ad2' : '#e5484d'} />
                                         </div>
                                     </td>
-                                    <td className="px-6 py-2 text-right text-[12px] font-mono text-text-secondary">
+                                    <td className="px-4 md:px-6 py-2 text-right text-[12px] font-mono text-text-secondary">
                                         {url.clicks >= 1000 ? `${(url.clicks / 1000).toFixed(1)}k` : url.clicks.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-2 text-right" onClick={(e) => e.stopPropagation()}>
-                                        <div className="flex justify-end lg:opacity-0 group-hover:opacity-100 transition-opacity gap-2">
+                                    <td className="px-4 md:px-6 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex justify-end opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity gap-2 md:gap-3">
                                             <button
                                                 onClick={() => copyToClipboard(url.shortUrl, url.id)}
                                                 className={`transition-colors ${copiedId === url.id ? 'text-accent' : 'text-text-muted hover:text-text-primary'}`}

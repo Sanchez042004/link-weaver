@@ -36,12 +36,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, noSc
     }, []);
 
     return (
-        <div className="h-screen w-screen overflow-hidden flex antialiased bg-background text-text-primary">
+        <div className="h-[100dvh] w-full overflow-hidden flex antialiased bg-background text-text-primary">
             {/* Sidebar */}
             <Sidebar />
 
             {/* Main Wrapper */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                 {/* Header */}
                 <header className="h-[56px] border-b border-border-primary flex items-center justify-between px-6 bg-background flex-shrink-0 z-30">
                     {/* Logo on mobile, text title on desktop */}
@@ -117,7 +117,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, noSc
                 </header>
 
                 {/* Content Area */}
-                <main className={`flex-1 ${noScroll ? 'overflow-hidden' : 'overflow-y-auto'} p-8`}>
+                <main className={`flex-1 ${noScroll ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'} p-4 md:p-8 overscroll-contain -webkit-overflow-scrolling-touch`}>
                     <div className={`max-w-6xl mx-auto ${noScroll ? 'h-full flex flex-col' : ''}`}>
                         {children}
                     </div>

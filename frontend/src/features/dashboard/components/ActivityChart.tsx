@@ -264,14 +264,20 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
                     {points.length === 1 ? (
                         <span className="mx-auto text-on-background">{points[0].label}</span>
                     ) : (
-                        points.map((p, i) => (
-                            <span
-                                key={`label-${i}`}
-                                className={`transition-colors text-center -ml-4 w-8 ${hoveredIndex === i ? 'text-text-primary font-bold' : 'text-text-muted'}`}
-                            >
-                                {p.label}
-                            </span>
-                        ))
+                        points.map((p, i) => {
+                            // On small screens, hide some labels to avoid overlap
+                            const isMobile = width < 480;
+                            const shouldShow = !isMobile || (i % Math.ceil(points.length / 5) === 0) || i === points.length - 1;
+                            
+                            return (
+                                <span
+                                    key={`label-${i}`}
+                                    className={`transition-colors text-center -ml-4 w-8 ${hoveredIndex === i ? 'text-text-primary font-bold' : 'text-text-muted'} ${shouldShow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                >
+                                    {p.label}
+                                </span>
+                            );
+                        })
                     )}
                 </div>
             )}

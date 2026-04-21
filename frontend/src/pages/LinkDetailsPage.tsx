@@ -8,7 +8,7 @@ import { EditLinkModal } from '../features/links/components/EditLinkModal';
 import ConfirmModal from '../components/ui/ConfirmModal';
 import Skeleton from '../components/ui/Skeleton';
 import ActivityChart from '../features/dashboard/components/ActivityChart';
-import ReferrersTable from '../features/analytics/components/ReferrersTable';
+import DevicesTable from '../features/analytics/components/DevicesTable';
 import LocationsTable from '../features/analytics/components/LocationsTable';
 import { env } from '../config/env';
 
@@ -182,8 +182,8 @@ const LinkDetailsPage: React.FC = () => {
 
                 {/* Tables Grid */}
                 <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <ReferrersTable 
-                        referrers={data.blocks?.referrers || []} 
+                    <DevicesTable 
+                        devices={data.blocks?.devices || []} 
                         loading={loading} 
                     />
                     <LocationsTable 

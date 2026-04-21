@@ -9,6 +9,8 @@ import { DashboardLayout } from '../layouts/DashboardLayout';
 import StatsGrid from '../features/dashboard/components/StatsGrid';
 import ActivityChart from '../features/dashboard/components/ActivityChart';
 import RecentLinksTable from '../features/dashboard/components/RecentLinksTable';
+import DevicesTable from '../features/analytics/components/DevicesTable';
+import LocationsTable from '../features/analytics/components/LocationsTable';
 
 import { CreateLinkModal } from '../features/links/components/CreateLinkModal';
 import { EditLinkModal } from '../features/links/components/EditLinkModal';
@@ -127,10 +129,23 @@ const DashboardPage: React.FC = () => {
                     />
                 </div>
 
+                {/* Global Analytics Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                    <DevicesTable 
+                        devices={analyticsData?.blocks?.devices || []} 
+                        loading={isAnalyticsLoading} 
+                    />
+                    <LocationsTable 
+                        countries={analyticsData?.blocks?.countries || []} 
+                        totalClicks={analyticsData?.totalClicks || 0} 
+                        loading={isAnalyticsLoading} 
+                    />
+                </div>
+
                 {/* Recent Links Table */}
                 <div className="mb-12">
                     <RecentLinksTable
-                        urls={urls.slice(0, 3)}
+                        urls={urls.slice(0, 5)}
                         isLoading={isLoading}
                         onDelete={handleDeleteClick}
                         onAnalytics={(alias) => navigate(`/analytics/${alias}`)}

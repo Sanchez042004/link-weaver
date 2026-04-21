@@ -27,20 +27,39 @@
 
 /* Dashboard Monolithic Theme Variables from HTML template */
 @layer base {
+    /* Native App Feel: Disable selection and dragging */
+    * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        user-drag: none;
+    }
+
+    /* Re-enable selection for inputs, textareas and specific content if needed */
+    input, 
+    textarea, 
+    [contenteditable="true"] {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
     body {
         background-color: #0a0a0a;
         color: #e2e2e2;
         font-family: 'Inter', sans-serif;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        overscroll-behavior-y: none;
     }
 }
 
-/* Desactivar selección para todos los iconos */
-svg,
+/* Desactivar selección e interacción para iconos decorativos */
 .material-symbols-outlined {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    pointer-events: none;
 }
 
 /* Page Transition Animations */
@@ -56,6 +75,36 @@ svg,
 
 .page-transition {
     animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes knot-weave {
+    0% {
+        stroke-dashoffset: 240;
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        stroke-dashoffset: 0;
+        transform: rotate(180deg) scale(1.1);
+    }
+    100% {
+        stroke-dashoffset: -240;
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+@keyframes knot-weave-reverse {
+    0% {
+        stroke-dashoffset: -240;
+        transform: rotate(45deg) scale(1.1);
+    }
+    50% {
+        stroke-dashoffset: 0;
+        transform: rotate(-135deg) scale(1);
+    }
+    100% {
+        stroke-dashoffset: 240;
+        transform: rotate(-315deg) scale(1.1);
+    }
 }
 
 /* Skeleton Shimmer Animation */
@@ -140,7 +189,11 @@ input:-webkit-autofill::first-line {
 }
 
 /* Minimalist Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #282828; }
+::-webkit-scrollbar-thumb { 
+    background: #282828; 
+    border-radius: 10px;
+    border: 1px solid #131313;
+}
+::-webkit-scrollbar-thumb:hover { background: #333333; }
