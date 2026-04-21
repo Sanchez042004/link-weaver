@@ -33,10 +33,7 @@ const LinksPage: React.FC = () => {
         }
     }, [location.state]);
 
-    const handleEdit = (url: Url) => {
-        setSelectedLink(url);
-        setIsEditModalOpen(true);
-    };
+
 
     const handleDeleteClick = (id: string) => {
         const link = urls.find((u: Url) => u.id === id);
@@ -89,7 +86,6 @@ const LinksPage: React.FC = () => {
                 <RecentLinksTable
                     urls={urls}
                     isLoading={isLoading}
-                    onEdit={handleEdit}
                     onDelete={handleDeleteClick}
                     onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
                     onShowQR={(url: Url) => {

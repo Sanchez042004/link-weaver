@@ -44,10 +44,7 @@ const DashboardPage: React.FC = () => {
         }
     }, [location.state]);
 
-    const handleEdit = (url: Url) => {
-        setSelectedLink(url);
-        setIsEditModalOpen(true);
-    };
+
 
     const handleDeleteClick = (id: string) => {
         const link = urls.find(u => u.id === id);
