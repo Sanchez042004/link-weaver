@@ -71,7 +71,7 @@ export class AnalyticsService {
             });
 
         } catch (error) {
-            Logger.error('⚠️ Error processing click:', error);
+            Logger.error('Error processing click:', error);
         }
     }
 
@@ -174,6 +174,7 @@ export class AnalyticsService {
 
         const [
             totalClicks,
+            previousTotalClicks,
             countries,
             browsers,
             os,
@@ -188,6 +189,7 @@ export class AnalyticsService {
             referrersPrevious
         ] = await Promise.all([
             this.clickRepository.countByUserInRange(userId, startDate, new Date()),
+            this.clickRepository.countByUserInRange(userId, previousStartDate, startDate),
             this.clickRepository.groupByUserCountry(userId, startDate),
             this.clickRepository.groupByUserBrowser(userId, startDate),
             this.clickRepository.groupByUserOS(userId, startDate),
@@ -236,7 +238,8 @@ export class AnalyticsService {
                 clicksToday,
                 clicksYesterday,
                 linksToday,
-                linksYesterday
+                linksYesterday,
+                previousTotalClicks
             },
             blocks: {
                 countries: countries.map((c: any) => ({ name: c.country || 'Unknown', value: c._count.country })),

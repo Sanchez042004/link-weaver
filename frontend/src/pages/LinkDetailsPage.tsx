@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-
-import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { useLinkAnalytics } from '../hooks/useAnalytics';
 import { useLinks } from '../features/links/hooks/useLinks';
 import { DashboardLayout } from '../layouts/DashboardLayout';
@@ -9,9 +8,9 @@ import { EditLinkModal } from '../features/links/components/EditLinkModal';
 import ConfirmModal from '../components/ui/ConfirmModal';
 import Skeleton from '../components/ui/Skeleton';
 import ActivityChart from '../features/dashboard/components/ActivityChart';
+import ReferrersTable from '../features/analytics/components/ReferrersTable';
+import LocationsTable from '../features/analytics/components/LocationsTable';
 import { env } from '../config/env';
-
-
 
 const LinkDetailsPage: React.FC = () => {
     const { alias } = useParams<{ alias: string }>();
@@ -48,30 +47,16 @@ const LinkDetailsPage: React.FC = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // Initial full page loading (only when no data is present yet)
     if (loading && !data) {
         return (
             <DashboardLayout>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
-                    <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-border-dark/60 pb-6">
-                        <Skeleton className="h-4 w-32" />
-                        <div className="flex justify-between items-start">
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-3">
-                                    <Skeleton className="h-10 w-48" />
-                                    <Skeleton className="h-6 w-16 rounded" />
-                                </div>
-                                <Skeleton className="h-5 w-64" />
-                            </div>
-                        </div>
+                <div className="p-8 md:p-12 max-w-7xl mx-auto space-y-12">
+                    <Skeleton className="h-24 w-full rounded-xl" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <Skeleton className="h-32 w-full rounded-xl" />
+                        <Skeleton className="h-32 w-full rounded-xl" />
+                        <Skeleton className="h-32 w-full rounded-xl" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[1, 2, 3].map(i => (
-                            <Skeleton key={i} className="h-32 rounded-xl" />
-                        ))}
-                    </div>
-                    {/* Add chart skeleton for initial load consistency */}
-                    <Skeleton className="h-[400px] rounded-2xl" />
                 </div>
             </DashboardLayout>
         );
@@ -81,9 +66,9 @@ const LinkDetailsPage: React.FC = () => {
         return (
             <DashboardLayout>
                 <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center p-4">
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white font-display">Link Not Found</h2>
-                    <p className="text-slate-500 font-body">The link you are looking for does not exist or has been deleted.</p>
-                    <button onClick={() => navigate('/dashboard')} className="px-6 py-2 bg-primary text-white rounded-lg font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all font-body">
+                    <h2 className="text-2xl font-headline font-bold text-text-primary">Link Not Found</h2>
+                    <p className="text-text-muted">The link you are looking for does not exist or has been deleted.</p>
+                    <button onClick={() => navigate('/dashboard')} className="px-6 py-2 bg-accent text-white rounded-lg font-bold font-headline">
                         Back to Dashboard
                     </button>
                 </div>
@@ -106,223 +91,123 @@ const LinkDetailsPage: React.FC = () => {
                 verificationPlaceholder="/alias"
             />
 
-            <main className="flex-1 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
-                <div className="w-full max-w-[1100px] flex flex-col gap-6">
-                    {/* Breadcrumbs & Heading Combined */}
-                    <div className="flex flex-col gap-4">
-                        {/* Breadcrumbs */}
-                        <div className="flex flex-wrap items-center gap-2 text-sm font-body">
-                            <Link to="/dashboard" className="text-slate-500 dark:text-[#9db9a6] hover:text-primary transition-colors flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[18px]">dashboard</span>
-                                Dashboard
-                            </Link>
-                            <span className="text-slate-400 dark:text-[#586e60]">/</span>
-                            <span className="text-slate-500 dark:text-[#9db9a6]">Analytics</span>
-                            <span className="text-slate-400 dark:text-[#586e60]">/</span>
-                            <span className="text-slate-900 dark:text-white font-medium">{env.getShortUrlBaseDisplay()}/{data.alias}</span>
-                        </div>
+            <div className="p-8 md:p-12 max-w-7xl mx-auto space-y-12 w-full font-body">
+                {/* Breadcrumbs & Header */}
+                <section className="space-y-6">
+                    <nav className="flex items-center space-x-2 text-[11px] font-label font-semibold uppercase tracking-widest text-text-secondary">
+                        <Link to="/links" className="hover:text-text-primary transition-colors">My Links</Link>
+                        <span className="material-symbols-outlined !text-[12px]">chevron_right</span>
+                        <span className="text-text-primary">{env.getShortUrlBaseDisplay()}/{data.alias}</span>
+                    </nav>
 
-                        {/* Page Header */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-200 dark:border-border-dark/60">
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white font-display">{env.getShortUrlBaseDisplay()}/{data.alias}</h1>
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-primary/20 text-primary border border-primary/20 tracking-widest">ACTIVE</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-slate-400 dark:text-[#9db9a6] text-sm md:text-base break-all font-body">
-                                    <span className="material-symbols-outlined text-[18px]">link</span>
-                                    <span className="truncate max-w-md md:max-w-xl">Original: <a href={data.longUrl} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">{data.longUrl}</a></span>
-                                </div>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="space-y-2">
+                            <div className="flex items-center space-x-4">
+                                <h2 className="text-3xl md:text-5xl font-headline font-semibold tracking-[0.02em] text-text-primary">{data.alias}</h2>
+                                <span className="px-3 py-1 bg-accent-soft text-accent rounded-md text-[10px] font-label font-bold tracking-wider uppercase">ACTIVE</span>
                             </div>
-                            <div className="flex gap-3">
-                                <button onClick={() => setIsEditModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-dark border border-border-dark/60 text-white text-sm font-bold hover:bg-surface-highlight transition-colors shadow-sm font-body">
-                                    <span className="material-symbols-outlined text-[20px]">edit</span>
-                                    <span>Edit Link</span>
-                                </button>
-                                <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:brightness-110 text-white text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 font-body">
-                                    <span className="material-symbols-outlined text-[20px]">{copied ? 'check' : 'content_copy'}</span>
-                                    <span>{copied ? 'Copied' : 'Copy Link'}</span>
-                                </button>
-                            </div>
+                            <p className="text-text-secondary text-sm break-all max-w-2xl">
+                                Route: <a href={data.longUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline transition-colors font-mono">{data.longUrl}</a>
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button onClick={() => setIsEditModalOpen(true)} className="px-5 py-2.5 rounded-lg border border-border-secondary text-text-primary font-semibold text-xs hover:bg-surface-hover transition-colors flex items-center space-x-2">
+                                <span className="material-symbols-outlined !text-[16px]">edit</span>
+                                <span>Edit Link</span>
+                            </button>
+                            <button onClick={handleCopy} className="px-5 py-2.5 rounded-lg bg-accent text-white font-semibold text-xs hover:opacity-90 transition-opacity flex items-center space-x-2">
+                                <span className="material-symbols-outlined !text-[16px]">{copied ? 'check' : 'content_copy'}</span>
+                                <span>{copied ? 'Copied' : 'Copy Link'}</span>
+                            </button>
                         </div>
                     </div>
+                </section>
 
-                    {/* Date Filters Simulation */}
-                    <div className="flex items-center justify-between overflow-x-auto pb-2">
-                        <div className="flex gap-2 p-1 bg-background-dark/80 rounded-xl border border-border-dark/20">
-                            {[
-                                { label: 'Last 7 Days', value: 7 },
-                                { label: 'Last 30 Days', value: 30 },
-                                { label: 'All Time', value: 0 }
-                            ].map((filter) => (
-                                <button
-                                    key={filter.value}
-                                    onClick={() => setFilterDays(filter.value)}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all font-body ${filterDays === filter.value
-                                        ? 'bg-surface-dark text-white shadow-sm'
-                                        : 'text-slate-400 dark:text-[#9db9a6] hover:bg-surface-dark/50 hover:text-white'
-                                        }`}
-                                >
-                                    {filter.label}
-                                </button>
-                            ))}
+                {/* Stats Grid */}
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-surface p-6 rounded-xl border border-border-primary space-y-3">
+                        <div className="flex justify-between items-start">
+                            <p className="text-[11px] font-label font-semibold text-text-secondary uppercase tracking-widest">Total Clicks</p>
+                            <span className="material-symbols-outlined text-text-secondary">analytics</span>
                         </div>
-                        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-[#586e60] font-body">
-                            <span className="material-symbols-outlined text-[16px]">schedule</span>
-                            Updated just now
-                        </div>
-                    </div>
-
-                    {/* KPI Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {loading ? (
-                            <>
-                                <Skeleton className="h-[140px] rounded-xl" />
-                                <Skeleton className="h-[140px] rounded-xl" />
-                                <Skeleton className="h-[140px] rounded-xl" />
-                            </>
-                        ) : (
-                            <>
-                                <KPICard
-                                    title="Total Clicks"
-                                    value={data.totalClicks.toLocaleString()}
-                                    icon="ads_click"
-                                    trend={data.trend?.value}
-                                    trendIcon={data.trend?.isUp ? 'trending_up' : 'trending_down'}
-                                    trendColor={data.trend?.isUp ? 'text-primary' : 'text-red-500'}
-                                    tooltip="Total number of times this link has been accessed"
-                                />
-                                <KPICard
-                                    title="Creation Date"
-                                    value={format(new Date(data.createdAt), 'd MMM yyyy', { locale: undefined })}
-                                    icon="calendar_today"
-                                    subtext={`${differenceInDays(new Date(), new Date(data.createdAt))} days active`}
-                                    tooltip="The date when this link was created and became active"
-                                />
-                                <KPICard
-                                    title="Last Click"
-                                    value={data.lastAccessed ? formatDistanceToNow(new Date(data.lastAccessed), { addSuffix: true }) : 'Never'}
-                                    icon="timer"
-                                    subtext={data.lastAccessed ? `from ${data.recentClickCountry || 'unknown'}` : 'No clicks yet'}
-                                    tooltip="The exact moment when the last access to this link was recorded"
-                                />
-                            </>
-                        )}
-                    </div>
-
-                    {/* Main Graph Section */}
-                    <div className="w-full">
-                        <ActivityChart
-                            timeline={data.blocks?.timeline || null}
-                            isLoading={loading}
-                            title={`Engagement ${filterDays === 0 ? '(All Time)' : `(Last ${filterDays} Days)`}`}
-                        />
-                    </div>
-
-                    {/* Details Grid: Locations & Devices */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Locations Card */}
-                        <div className="flex flex-col gap-4 rounded-xl bg-surface-dark p-6 border border-border-dark/40 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display">
-                                    <span className="material-symbols-outlined text-primary">public</span>
-                                    Top Locations
-                                    <div className="group/tooltip relative flex items-center">
-                                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
-                                            <div className="relative z-10">Geographical distribution of your audience by country</div>
-                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
-                                        </div>
-                                    </div>
-                                </h3>
-                                <span className="text-[10px] font-black text-slate-500 dark:text-[#9db9a6] uppercase tracking-widest font-body">Real-time data</span>
-                            </div>
-                            <div className="flex flex-col gap-5 mt-2">
-                                {loading ? (
-                                    <>
-                                        {[1, 2, 3, 4].map(i => (
-                                            <div key={i} className="flex flex-col gap-2">
-                                                <div className="flex justify-between">
-                                                    <Skeleton className="h-4 w-24" />
-                                                    <Skeleton className="h-4 w-12" />
-                                                </div>
-                                                <Skeleton className="h-2 w-full rounded-full" />
-                                            </div>
-                                        ))}
-                                    </>
-                                ) : data.blocks?.countries?.length > 0 ? (
-                                    data.blocks.countries.slice(0, 4).map((item: any) => {
-                                        const percentage = data.totalClicks > 0 ? Math.round((item.value / data.totalClicks) * 100) : 0;
-                                        return (
-                                            <div key={item.name} className="flex flex-col gap-1.5 font-body">
-                                                <div className="flex justify-between items-center text-sm">
-                                                    <span className="text-slate-900 dark:text-white font-bold flex items-center gap-2">
-                                                        {item.name !== 'Unknown' ? (
-                                                            <img src={`https://flagcdn.com/w20/${item.name.toLowerCase()}.png`} className="w-5 h-auto rounded" alt={item.name} />
-                                                        ) : '🌍'}
-                                                        {item.name}
-                                                    </span>
-                                                    <span className="text-slate-500 dark:text-[#9db9a6] font-bold">{item.value.toLocaleString()} ({percentage}%)</span>
-                                                </div>
-                                                <div className="h-2 w-full bg-slate-100 dark:bg-background-dark/50 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <p className="text-center text-slate-500 py-10 font-body italic">No location data yet</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Devices Card */}
-                        <div className="flex flex-col gap-4 rounded-xl bg-surface-dark p-6 border border-border-dark/40 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display">
-                                    <span className="material-symbols-outlined text-primary">devices</span>
-                                    Devices
-                                    <div className="group/tooltip relative flex items-center">
-                                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
-                                            <div className="relative z-10">Comparison between mobile and desktop users</div>
-                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
-                                        </div>
-                                    </div>
-                                </h3>
-                                <span className="text-[10px] font-black text-slate-500 dark:text-[#9db9a6] uppercase tracking-widest font-body">Details</span>
-                            </div>
-                            {loading ? (
-                                <div className="flex flex-col sm:flex-row items-center gap-8 mt-2 h-full justify-center">
-                                    <Skeleton className="size-32 rounded-full shrink-0" />
-                                    <div className="flex flex-col gap-3 w-full">
-                                        <Skeleton className="h-12 w-full rounded-lg" />
-                                        <Skeleton className="h-12 w-full rounded-lg" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <DeviceSection items={data.blocks?.devices} total={data.totalClicks} />
+                        <div className="flex items-baseline space-x-3">
+                            <h3 className="text-3xl font-mono font-bold text-text-primary tracking-tighter">{data.totalClicks.toLocaleString()}</h3>
+                            {data.trend?.isUp && data.trend?.value && (
+                                <span className="px-2 py-0.5 bg-green-500/10 text-green-500 rounded-md text-[10px] font-mono font-bold border border-green-500/20">{data.trend.value}</span>
                             )}
                         </div>
                     </div>
 
-
-
-                    {/* Danger Zone */}
-                    <div className="mt-8 p-6 rounded-xl border border-red-500/20 bg-red-500/5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:bg-red-500/[0.08]">
-                        <div className="font-body">
-                            <h4 className="font-bold text-red-500 dark:text-red-400 flex items-center gap-2 font-display">
-                                <span className="material-symbols-outlined text-[20px]">report_problem</span>
-                                Danger Zone
-                            </h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Permanently delete this link and all its history. This cannot be undone.</p>
+                    <div className="bg-surface p-6 rounded-xl border border-border-primary space-y-3">
+                        <div className="flex justify-between items-start">
+                            <p className="text-[11px] font-label font-semibold text-text-secondary uppercase tracking-widest">Creation Date</p>
+                            <span className="material-symbols-outlined text-text-secondary">calendar_today</span>
                         </div>
-                        <button onClick={() => setIsDeleteModalOpen(true)} className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white font-bold text-sm rounded-lg border border-red-500/20 transition-all font-body">
-                            Delete Link
-                        </button>
+                        <h3 className="text-[24px] font-mono font-semibold text-text-primary tracking-tighter">
+                            {format(new Date(data.createdAt), 'MMM d, yyyy')}
+                        </h3>
                     </div>
-                </div>
-            </main>
+
+                    <div className="bg-surface p-6 rounded-xl border border-border-primary space-y-3">
+                        <div className="flex justify-between items-start">
+                            <p className="text-[11px] font-label font-semibold text-text-secondary uppercase tracking-widest">Last Click</p>
+                            <span className="material-symbols-outlined text-text-secondary">history</span>
+                        </div>
+                        <h3 className="text-[24px] font-mono font-semibold text-text-primary tracking-tighter capitalize">
+                            {data.lastAccessed ? formatDistanceToNow(new Date(data.lastAccessed), { addSuffix: true }) : 'Never'}
+                        </h3>
+                    </div>
+                </section>
+
+                {/* Main Chart Section */}
+                <section className="bg-surface p-8 rounded-xl border border-border-primary">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <h4 className="text-[11px] font-label font-semibold text-text-secondary uppercase tracking-widest">Traffic Over Time</h4>
+                        <div className="flex space-x-2">
+                            <button onClick={() => setFilterDays(7)} className={`px-3 py-1 rounded-md text-[10px] font-label font-bold transition-colors ${filterDays === 7 ? 'bg-surface-hover text-text-primary border border-border-secondary' : 'text-text-secondary hover:text-text-primary border border-transparent'}`}>7D</button>
+                            <button onClick={() => setFilterDays(30)} className={`px-3 py-1 rounded-md text-[10px] font-label font-bold transition-colors ${filterDays === 30 ? 'bg-surface-hover text-text-primary border border-border-secondary' : 'text-text-secondary hover:text-text-primary border border-transparent'}`}>30D</button>
+                            <button onClick={() => setFilterDays(0)} className={`px-3 py-1 rounded-md text-[10px] font-label font-bold transition-colors ${filterDays === 0 ? 'bg-surface-hover text-text-primary border border-border-secondary' : 'text-text-secondary hover:text-text-primary border border-transparent'}`}>ALL</button>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                        {/* We reuse ActivityChart which acts independently but matches the exact aesthetic */}
+                        <ActivityChart 
+                            timeline={data.blocks?.timeline || null}
+                            isLoading={loading}
+                            title="" // Hidden title since we have it above
+                        />
+                    </div>
+                </section>
+
+                {/* Tables Grid */}
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <ReferrersTable 
+                        referrers={data.blocks?.referrers || []} 
+                        loading={loading} 
+                    />
+                    <LocationsTable 
+                        countries={data.blocks?.countries || []} 
+                        totalClicks={data.totalClicks} 
+                        loading={loading} 
+                    />
+                </section>
+
+                {/* Danger Zone */}
+                <section className="bg-surface rounded-xl overflow-hidden border-[1px] border-red-500/30 p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div className="space-y-1">
+                        <h4 className="text-[13px] font-headline font-semibold text-text-primary flex items-center gap-2">
+                            <span className="material-symbols-outlined text-danger text-[18px]">warning</span>
+                            Danger Zone
+                        </h4>
+                        <p className="text-[12px] text-text-secondary">Permanently delete this link and all its history. This action cannot be undone.</p>
+                    </div>
+                    <button onClick={() => setIsDeleteModalOpen(true)} className="px-5 py-2.5 bg-danger/10 text-danger hover:bg-danger hover:text-white font-semibold text-xs rounded-lg transition-colors flex items-center space-x-2 whitespace-nowrap border-[1px] border-red-500/50">
+                        <span className="material-symbols-outlined !text-[16px]">delete</span>
+                        <span>Delete Link</span>
+                    </button>
+                </section>
+            </div>
 
             {isEditModalOpen && (
                 <EditLinkModal
@@ -333,107 +218,6 @@ const LinkDetailsPage: React.FC = () => {
                 />
             )}
         </DashboardLayout>
-    );
-};
-
-const KPICard = ({ title, value, icon, trend, trendIcon, trendColor, subtext, tooltip }: any) => (
-    <div className="group relative rounded-xl bg-surface-dark p-6 border border-border-dark/40 shadow-sm hover:shadow-md transition-all">
-        <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <span className="material-symbols-outlined text-7xl text-primary">{icon}</span>
-        </div>
-        <div className="flex flex-col gap-2 relative z-10">
-            <div className="text-slate-500 dark:text-[#9db9a6] text-sm font-medium flex items-center gap-1 font-body">
-                <span>{title}</span>
-                {tooltip && (
-                    <div className="group/tooltip relative flex items-center">
-                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                            <div className="relative z-10">{tooltip}</div>
-                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-r border-b border-white/10"></div>
-                        </div>
-                    </div>
-                )}
-            </div>
-            <p className="text-slate-900 dark:text-white text-3xl font-bold tracking-tight font-display">{value}</p>
-            {trend && (
-                <div className={`flex items-center gap-1 text-xs font-bold mt-1 font-body ${trendColor || 'text-primary'}`}>
-                    <span className="material-symbols-outlined text-[16px]">{trendIcon}</span>
-                    <span>{trend}</span>
-                </div>
-            )}
-            {subtext && <p className="text-slate-400 dark:text-[#586e60] text-xs font-medium mt-1 font-body">{subtext}</p>}
-        </div>
-    </div>
-);
-
-const DeviceSection = ({ items, total }: any) => {
-    const mobileValue = items?.find((i: any) => i.name.toLowerCase().includes('mobile'))?.value || 0;
-    const desktopValue = items?.find((i: any) => i.name.toLowerCase().includes('desktop'))?.value || 0;
-    const mobilePercentage = total > 0 ? Math.round((mobileValue / total) * 100) : 0;
-    const desktopPercentage = total > 0 ? Math.round((desktopValue / total) * 100) : 100 - mobilePercentage;
-
-    const isMobileLeading = mobileValue >= desktopValue && mobileValue > 0;
-    const isDesktopLeading = desktopValue > mobileValue;
-
-    // Completed tooltip tasks:
-    // - [x] Implement Functional Tooltips
-    // - [x] Update `KPICard` and `StatsCard` to support tooltips
-    // - [x] Design CSS tooltip with micro-animations
-    // - [x] Add metric descriptions in all dashboard components
-    const devices = [
-        {
-            name: 'Mobile',
-            value: mobileValue,
-            percentage: mobilePercentage,
-            icon: 'smartphone',
-            subtext: 'iOS & Android',
-            isLeading: isMobileLeading
-        },
-        {
-            name: 'Desktop',
-            value: desktopValue,
-            percentage: desktopPercentage,
-            icon: 'computer',
-            subtext: 'Windows & Mac',
-            isLeading: isDesktopLeading
-        }
-    ].sort((a, b) => b.value - a.value);
-
-    return (
-        <div className="flex flex-col sm:flex-row items-center gap-8 mt-2 h-full justify-center">
-            {/* Donut Chart Simulation */}
-            <div className="relative size-32 shrink-0">
-                <div className="absolute inset-0 rounded-full border-[12px] border-background-dark/80 dark:border-background-dark" style={{
-                    background: `conic-gradient(#ec5b13 0% ${devices[0].percentage}%, #49332a ${devices[0].percentage}% 100%)`,
-                    mask: 'radial-gradient(transparent 58%, black 60%)',
-                    WebkitMask: 'radial-gradient(transparent 58%, black 60%)'
-                }}></div>
-                <div className="absolute inset-0 flex flex-col items-center justify-center font-display">
-                    <span className="text-2xl font-bold text-white">{devices[0].percentage}%</span>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tight">{devices[0].name}</span>
-                </div>
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-col gap-3 w-full font-body">
-                {devices.map((device) => (
-                    <div key={device.name} className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-300 ${device.isLeading
-                        ? 'bg-primary/10 border-primary/40 shadow-[inset_0_0_12px_rgba(236,91,19,0.05)]'
-                        : 'bg-[#2e1d15]/30 border-border-dark/40 opacity-70'}`}>
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-md transition-colors ${device.isLeading ? 'bg-primary/20 text-primary' : 'bg-surface-dark text-slate-500'}`}>
-                                <span className="material-symbols-outlined text-xl">{device.icon}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className={`text-sm font-bold transition-colors ${device.isLeading ? 'text-white' : 'text-slate-400'}`}>{device.name}</span>
-                                <span className="text-[10px] text-slate-500 uppercase tracking-tighter">{device.subtext}</span>
-                            </div>
-                        </div>
-                        <span className={`text-sm font-black transition-colors ${device.isLeading ? 'text-primary' : 'text-slate-500'}`}>{device.percentage}%</span>
-                    </div>
-                ))}
-            </div>
-        </div>
     );
 };
 

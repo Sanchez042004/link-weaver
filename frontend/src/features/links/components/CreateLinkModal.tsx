@@ -34,17 +34,17 @@ export const CreateLinkModal: React.FC<CreateLinkModalProps> = ({ isOpen, onClos
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Create New Link">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Destination URL</label>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Destination URL</label>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="material-symbols-outlined text-slate-400 text-[20px]">link</span>
+                            <span className="material-symbols-outlined text-[#8a8a8a] text-[18px]">link</span>
                         </div>
                         <input
                             type="url"
                             required
-                            className="form-input w-full pl-10 h-11 rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-background-dark text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-primary focus:border-primary"
+                            className="w-full pl-9 pr-4 h-11 rounded-lg border border-border-secondary bg-[#0e0e0e] text-[#e2e2e2] placeholder:text-outline-variant focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors font-mono text-sm"
                             placeholder="https://example.com/very-long-url..."
                             value={longUrl}
                             onChange={(e) => setLongUrl(e.target.value)}
@@ -52,15 +52,16 @@ export const CreateLinkModal: React.FC<CreateLinkModalProps> = ({ isOpen, onClos
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Alias</label>
-                    <div className="flex bg-white dark:bg-background-dark rounded-lg border border-slate-300 dark:border-slate-600 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden group">
-                        <div className="bg-slate-50 dark:bg-slate-800/40 px-3 flex items-center border-r border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-sm font-black leading-none whitespace-nowrap">
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Alias (Optional)</label>
+                    <div className="flex rounded-lg border border-border-secondary bg-[#0e0e0e] focus-within:ring-1 focus-within:ring-accent focus-within:border-accent overflow-hidden group transition-colors">
+                        <div className="bg-[#1c1b1b] px-3 flex items-center border-r border-border-secondary text-[#8a8a8a] text-sm font-mono whitespace-nowrap pt-1">
                             {env.getShortUrlBaseDisplay()}/
                         </div>
                         <input
                             type="text"
-                            className="form-input w-full px-3 h-11 border-none bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
+                            className="w-full px-3 h-11 border-none bg-transparent text-[#e2e2e2] placeholder:text-outline-variant focus:outline-none focus:ring-0 font-mono text-sm"
+                            placeholder="custom-name"
                             value={alias}
                             onChange={(e) => setAlias(e.target.value)}
                         />
@@ -68,23 +69,26 @@ export const CreateLinkModal: React.FC<CreateLinkModalProps> = ({ isOpen, onClos
                 </div>
 
                 {error && (
-                    <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium">
-                        {error}
+                    <div className="p-3 mt-1 rounded-lg bg-danger/10 text-danger text-[13px] font-medium border border-danger/20 flex flex-col items-start">
+                        <div className="flex gap-2 items-center">
+                           <span className="material-symbols-outlined !text-[16px]">error</span>
+                           {error}
+                        </div>
                     </div>
                 )}
 
-                <div className="flex justify-end gap-3 mt-4">
+                <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-border-primary">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        className="px-5 py-2.5 text-xs font-semibold text-[#e2e2e2] hover:bg-surface-hover border border-border-secondary rounded-lg transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="px-4 py-2 bg-primary hover:brightness-110 text-white text-sm font-semibold rounded-lg shadow-lg shadow-primary/30 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="px-5 py-2.5 bg-accent hover:opacity-90 text-white text-xs font-semibold rounded-lg transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? (
                             <>

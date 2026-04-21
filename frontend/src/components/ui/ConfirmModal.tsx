@@ -30,7 +30,6 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 }) => {
     const [inputValue, setInputValue] = useState('');
 
-    // Reset input when modal closes
     useEffect(() => {
         if (!isOpen) {
             setInputValue('');
@@ -39,60 +38,67 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     const isVerified = verificationValue ? inputValue === verificationValue : true;
 
-    const colors = {
-        danger: 'bg-red-500 hover:bg-red-600 shadow-[0_4px_14px_0_rgba(239,68,68,0.39)]',
-        warning: 'bg-orange-500 hover:bg-orange-600 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]',
-        info: 'bg-primary hover:bg-orange-600 shadow-[0_4px_14px_0_rgba(236,91,19,0.39)]'
+    // Define monolithic button styles
+    const buttonStyles = {
+        danger: 'bg-danger/10 border border-danger/20 text-danger hover:bg-danger hover:text-white text-xs',
+        warning: 'bg-surface-hover border border-border-secondary text-[#e2e2e2] hover:bg-[#e2e2e2] hover:text-[#0a0a0a] text-xs',
+        info: 'bg-accent hover:opacity-90 text-white text-xs border border-transparent'
     };
 
     const iconColors = {
-        danger: 'text-red-400',
-        warning: 'text-orange-400',
-        info: 'text-primary'
+        danger: 'text-danger',
+        warning: 'text-[#e2e2e2]',
+        info: 'text-accent'
+    };
+
+    const iconBackgrounds = {
+        danger: 'bg-danger/10',
+        warning: 'bg-surface-hover',
+        info: 'bg-accent/10'
     };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title}>
             <div className="flex flex-col gap-6">
                 <div className="flex items-start gap-4">
-                    <div className={`p-2 bg-surface-highlight rounded-lg flex items-center justify-center shrink-0`}>
-                        <span className={`material-symbols-outlined text-[24px] ${iconColors[type]}`}>
+                    <div className={`p-2.5 ${iconBackgrounds[type]} rounded-lg flex items-center justify-center shrink-0`}>
+                        <span className={`material-symbols-outlined !text-[20px] ${iconColors[type]}`}>
                             {type === 'danger' ? 'report' : type === 'warning' ? 'warning' : 'help'}
                         </span>
                     </div>
                     <div>
-                        <p className="text-slate-300 text-sm leading-relaxed">{message}</p>
+                        <p className="text-[#8a8a8a] text-sm leading-relaxed">{message}</p>
                     </div>
                 </div>
 
                 {verificationValue && (
-                    <div className="bg-surface-highlight/30 p-4 rounded-xl border border-border-dark/50">
-                        <p className="text-[11px] text-slate-500 mb-2 tracking-wider font-bold">
-                            Please type <span className="text-white select-all">{verificationValue}</span> to confirm
+                    <div className="bg-[#0a0a0a]/50 p-4 rounded-xl border border-border-secondary flex flex-col gap-2">
+                        <p className="text-[11px] text-[#8a8a8a] font-headline font-semibold tracking-widest uppercase">
+                            Please type <span className="text-[#e2e2e2] select-all font-mono font-normal">{verificationValue}</span> to confirm
                         </p>
                         <input
                             type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             placeholder={verificationPlaceholder || "Type here..."}
-                            className="w-full bg-surface-dark border border-border-dark/50 rounded-lg h-10 px-3 text-white text-sm focus:border-primary/50 transition-colors focus:ring-0"
+                            className="w-full bg-[#0e0e0e] border border-border-secondary rounded-lg h-11 px-3 text-[#e2e2e2] text-sm focus:border-danger focus:ring-1 focus:ring-danger transition-colors font-mono placeholder:text-outline-variant"
                         />
                     </div>
                 )}
 
-                <div className="flex gap-3 mt-2">
+                <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-border-primary">
                     <button
                         onClick={onClose}
-                        className="flex-1 h-11 rounded-xl border border-border-dark/60 text-slate-400 text-sm font-bold hover:bg-surface-highlight hover:text-white transition-all"
+                        className="px-5 py-2.5 rounded-lg border border-border-secondary text-[#e2e2e2] text-xs font-semibold hover:bg-surface-hover transition-colors"
                     >
                         {cancelText}
                     </button>
                     <button
                         disabled={!isVerified || isLoading}
                         onClick={onConfirm}
-                        className={`flex-1 h-11 rounded-xl text-white text-sm font-bold transition-all flex items-center justify-center gap-2 ${colors[type]} disabled:opacity-50 disabled:cursor-not-allowed`}
+                        className={`px-5 py-2.5 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${buttonStyles[type]} disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                        {isLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>}
+                        {isLoading && <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>}
                         <span>{confirmText}</span>
                     </button>
                 </div>

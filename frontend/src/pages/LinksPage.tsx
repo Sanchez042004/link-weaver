@@ -1,29 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useLinks } from '../features/links/hooks/useLinks';
-import { useAuth } from '../context/AuthContext';
-import { useGeneralAnalytics } from '../hooks/useAnalytics';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { env } from '../config/env';
 
 import { DashboardLayout } from '../layouts/DashboardLayout';
-import StatsGrid from '../features/dashboard/components/StatsGrid';
-import ActivityChart from '../features/dashboard/components/ActivityChart';
 import RecentLinksTable from '../features/dashboard/components/RecentLinksTable';
-
 import { CreateLinkModal } from '../features/links/components/CreateLinkModal';
 import { EditLinkModal } from '../features/links/components/EditLinkModal';
 import { QRCodeModal } from '../features/links/components/QRCodeModal';
 import ConfirmModal from '../components/ui/ConfirmModal';
 import type { Url } from '../api/url.api';
 
-const DashboardPage: React.FC = () => {
+const LinksPage: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const { urls, isLoading: isLinksLoading, deleteLink, fetchUrls } = useLinks();
-    const [filterDays, setFilterDays] = useState(7);
-    const { data: analyticsData, loading: isAnalyticsLoading } = useGeneralAnalytics(filterDays);
-
-    const isLoading = isLinksLoading || isAnalyticsLoading;
+    const { urls, isLoading, deleteLink, fetchUrls } = useLinks();
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,7 +29,6 @@ const DashboardPage: React.FC = () => {
     useEffect(() => {
         if (location.state?.openCreateModal) {
             setIsCreateModalOpen(true);
-            // Clear state to avoid reopening on refresh
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);
@@ -50,7 +39,7 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleDeleteClick = (id: string) => {
-        const link = urls.find(u => u.id === id);
+        const link = urls.find((u: Url) => u.id === id);
         if (link) {
             setLinkToDelete(link);
             setIsDeleteModalOpen(true);
@@ -73,78 +62,44 @@ const DashboardPage: React.FC = () => {
     const handleSuccessCreate = () => {
         setIsCreateModalOpen(false);
         fetchUrls();
-    }
+    };
 
     const handleSuccessEdit = () => {
         setIsEditModalOpen(false);
         fetchUrls();
-    }
+    };
 
     return (
         <DashboardLayout>
-            {/* Headline Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
                 <div>
-                    <h1 className="text-[20px] font-medium text-text-primary">Welcome back, {user?.name || 'User'}</h1>
-                    <p className="text-[13px] text-text-secondary mt-1">Performance metrics for your active workspace.</p>
+                    <h1 className="text-[20px] font-medium text-text-primary">My Links</h1>
+                    <p className="text-[13px] text-text-secondary mt-1">Manage and track all your active shortened URLs.</p>
                 </div>
-                {/* Period Selector Tabs */}
-                <div className="mt-6 md:mt-0 flex space-x-6">
-                    {[
-                        { label: '7D', value: 7 },
-                        { label: '30D', value: 30 },
-                        { label: 'ALL', value: 0 }
-                    ].map((filter) => (
-                        <button
-                            key={filter.value}
-                            onClick={() => setFilterDays(filter.value)}
-                            className={`text-[13px] font-medium transition-colors py-1 ${
-                                filterDays === filter.value 
-                                ? 'tab-active' 
-                                : 'text-text-muted hover:text-text-primary'
-                            }`}
-                        >
-                            {filter.label}
-                        </button>
-                    ))}
-                </div>
+                <button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="mt-6 md:mt-0 px-5 py-2.5 bg-accent text-white font-semibold text-xs rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2"
+                >
+                    <span className="material-symbols-outlined !text-[16px]">add_link</span>
+                    <span>Create Link</span>
+                </button>
             </div>
 
-                {/* Stats Grid */}
-                <div className="mb-12">
-                    <StatsGrid
-                        urls={urls}
-                        isLoading={isLoading}
-                        comparison={analyticsData?.comparison}
-                        filteredClicks={analyticsData?.totalClicks}
-                        topLink={analyticsData?.blocks?.topLinks?.[0]}
-                    />
-                </div>
+            <div className="w-full">
+                <RecentLinksTable
+                    urls={urls}
+                    isLoading={isLoading}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                    onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
+                    onShowQR={(url: Url) => {
+                        setSelectedLink(url);
+                        setIsQRModalOpen(true);
+                    }}
+                />
+            </div>
 
-                {/* Main Chart Row */}
-                <div className="mb-12">
-                    <ActivityChart
-                        timeline={analyticsData?.blocks?.timeline || null}
-                        isLoading={isAnalyticsLoading}
-                        title="TRAFFIC OVER TIME"
-                    />
-                </div>
-
-                {/* Recent Links Table */}
-                <div className="mb-12">
-                    <RecentLinksTable
-                        urls={urls.slice(0, 3)}
-                        isLoading={isLoading}
-                        onEdit={handleEdit}
-                        onDelete={handleDeleteClick}
-                        onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
-                        onShowQR={(url) => {
-                            setSelectedLink(url);
-                            setIsQRModalOpen(true);
-                        }}
-                    />
-                </div>
-            {/* Modals outside scroll area */}
+            {/* Modals */}
             <CreateLinkModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
@@ -187,4 +142,4 @@ const DashboardPage: React.FC = () => {
     );
 };
 
-export default DashboardPage;
+export default LinksPage;

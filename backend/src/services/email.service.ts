@@ -11,7 +11,7 @@ export class EmailService {
 
     constructor() {
         if (env.SMTP_USER && env.SMTP_PASS) {
-            console.log('✅ EmailService: Configuración SMTP detectada (Gmail).');
+            console.log('EmailService: Configuración SMTP detectada (Gmail).');
             this.transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
@@ -20,7 +20,7 @@ export class EmailService {
                 },
             });
         } else {
-            console.warn('⚠️ EmailService: SMTP_USER o SMTP_PASS NO detectados en el entorno.');
+            console.warn('EmailService: SMTP_USER o SMTP_PASS NO detectados en el entorno.');
         }
     }
 
@@ -28,9 +28,8 @@ export class EmailService {
      * Enviar email de verificación de cuenta
      */
     async sendVerificationEmail(email: string, name: string, token: string): Promise<void> {
-        console.log(`📧 Intentando enviar email de verificación a: ${email}`);
         if (!this.transporter) {
-            console.warn('⚠️ Se intentó enviar un email pero SMTP no está configurado.');
+            console.warn('Se intentó enviar un email pero SMTP no está configurado.');
             return;
         }
 
@@ -55,9 +54,9 @@ export class EmailService {
                     </div>
                 `,
             });
-            console.log(`✅ Email de verificación enviado con éxito a ${email}. ID: ${info.messageId}`);
+            console.log(`Email de verificación enviado con éxito a ${email}. ID: ${info.messageId}`);
         } catch (error) {
-            console.error(`❌ Error enviando email de verificación a ${email}:`, error);
+            console.error(`Error enviando email de verificación a ${email}:`, error);
         }
     }
 
@@ -65,9 +64,8 @@ export class EmailService {
      * Enviar email para restablecer contraseña
      */
     async sendPasswordResetEmail(email: string, name: string, token: string): Promise<void> {
-        console.log(`📧 Intentando enviar email de recuperación a: ${email}`);
         if (!this.transporter) {
-            console.warn('⚠️ Se intentó enviar un email pero SMTP no está configurado.');
+            console.warn('Se intentó enviar un email pero SMTP no está configurado.');
             return;
         }
 
@@ -93,9 +91,9 @@ export class EmailService {
                     </div>
                 `,
             });
-            console.log(`✅ Email de recuperación enviado con éxito a ${email}. ID: ${info.messageId}`);
+            console.log(`Email de recuperación enviado con éxito a ${email}. ID: ${info.messageId}`);
         } catch (error) {
-            console.error(`❌ Error enviando email de recuperación a ${email}:`, error);
+            console.error(`Error enviando email de recuperación a ${email}:`, error);
             // No lanzamos el error para no bloquear el flujo principal, pero lo registramos
         }
     }

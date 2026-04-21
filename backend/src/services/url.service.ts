@@ -21,7 +21,14 @@ export class UrlService {
     ) { }
 
     /**
-     * Create a short URL
+     * Acorta una URL larga, generando un alias aleatorio o usando uno personalizado.
+     * 
+     * @param longUrl - La URL original que se desea acortar.
+     * @param userId - ID opcional del usuario propietario de la URL.
+     * @param customAlias - Alias personalizado opcional.
+     * @returns La entidad de la URL creada.
+     * @throws {BadRequestError} Si el alias está reservado.
+     * @throws {ConflictError} Si el alias ya está en uso.
      */
     public async shortenUrl(
         longUrl: string,

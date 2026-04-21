@@ -10,7 +10,7 @@ export class CacheService {
             max: 1000,
             ttl: 1000 * 60 * 5, // 5 minutes
         });
-        Logger.info('✅ CacheService: In-memory cache (LRU) inicializado.');
+        Logger.info('CacheService: In-memory cache (LRU) inicializado.');
     }
 
     /**
@@ -24,7 +24,7 @@ export class CacheService {
             }
             return null;
         } catch (error) {
-            Logger.warn(`⚠️ Cache GET error for key ${key}:`, error);
+            Logger.warn(`Cache GET error for key ${key}:`, error);
             return null;
         }
     }
@@ -37,7 +37,7 @@ export class CacheService {
         try {
             this.memoryCache.set(key, value, { ttl: ttl * 1000 });
         } catch (error) {
-            Logger.warn(`⚠️ Cache SET error for key ${key}:`, error);
+            Logger.warn(`Cache SET error for key ${key}:`, error);
         }
     }
 
@@ -48,7 +48,7 @@ export class CacheService {
         try {
             this.memoryCache.delete(key);
         } catch (error) {
-            Logger.warn(`⚠️ Cache DELETE error for key ${key}:`, error);
+            Logger.warn(`Cache DELETE error for key ${key}:`, error);
         }
     }
 }

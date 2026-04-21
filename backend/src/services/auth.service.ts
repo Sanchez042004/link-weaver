@@ -33,7 +33,7 @@ export class AuthService {
             // Si el usuario NO está verificado, verificamos si su token de registro expiró
             if (existingUser.verificationTokenExpires && existingUser.verificationTokenExpires < new Date()) {
                 // El token expiró, eliminamos el registro anterior para permitir la nueva creación
-                console.log(`🗑️ Eliminando usuario no verificado con token expirado: ${normalizedEmail}`);
+                console.log(`Eliminando usuario no verificado con token expirado: ${normalizedEmail}`);
                 await this.userRepository.delete(existingUser.id);
             } else {
                 // El usuario existe, no está verificado pero el token aún es válido
@@ -63,7 +63,7 @@ export class AuthService {
         try {
             await emailService.sendVerificationEmail(user.email, user.name || '', verificationToken);
         } catch (error) {
-            console.error('⚠️ Falló el envío del email de bienvenida:', error);
+            console.error('Falló el envío del email de bienvenida:', error);
         }
 
         // Generate token

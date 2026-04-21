@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Logo from '../components/Logo';
 
 const ForgotPasswordPage: React.FC = () => {
     const { forgotPassword } = useAuth();
@@ -29,82 +28,100 @@ const ForgotPasswordPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background-light dark:bg-background-dark page-transition">
-            <div className="mb-12">
-                <Link to="/">
-                    <Logo />
-                </Link>
-            </div>
-
-            <div className="max-w-md w-full bg-white dark:bg-[#2c201a] rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-[#3f322c]">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 text-center">
-                    Forgot Password?
-                </h1>
-                <p className="text-slate-600 dark:text-[#b9a69d] text-sm text-center mb-8">
-                    Enter your email address and we'll send you a link to reset your password.
-                </p>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-bg page-transition">
+            <div className="w-full max-w-[380px] flex flex-col items-center text-center">
 
                 {status === 'success' ? (
-                    <div className="text-center">
-                        <div className="size-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="material-symbols-outlined text-4xl">mark_email_read</span>
+                    <>
+                        {/* Success: Check your email */}
+                        <div className="mb-8 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[32px] text-accent">mail</span>
                         </div>
-                        <p className="text-slate-600 dark:text-[#b9a69d] mb-8 text-sm">
-                            {message}
+
+                        <h1 className="text-[24px] font-semibold tracking-[-0.03em] leading-[1.1] text-text-primary mb-2 font-headline">
+                            Check your email.
+                        </h1>
+
+                        <p className="text-[13px] leading-relaxed text-text-secondary mb-10 max-w-[320px]">
+                            We sent a reset link to <span className="text-text-primary font-medium">{email}</span>. Check your inbox.
                         </p>
-                        <Link
-                            to="/login"
-                            className="inline-flex w-full items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-[#d14e0f] text-white font-bold transition-all shadow-lg shadow-primary/20"
-                        >
-                            Back to Login
-                        </Link>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-slate-900 dark:text-white text-xs font-medium" htmlFor="email">
-                                Email Address
-                            </label>
-                            <input
-                                className="form-input w-full rounded-lg border border-slate-300 dark:border-[#3f322c] bg-white dark:bg-[#2c201a] focus:border-primary focus:ring-1 focus:ring-primary h-12 px-4 text-sm placeholder:text-slate-400 dark:placeholder:text-[#b9a69d] dark:text-white transition-colors"
-                                id="email"
-                                placeholder="name@company.com"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
+
+                        <div className="mb-5">
+                            <p className="text-[13px] text-text-secondary">
+                                Didn't receive it? Check your spam folder or{' '}
+                                <button
+                                    onClick={() => setStatus('idle')}
+                                    className="text-accent hover:opacity-80 transition-colors"
+                                >
+                                    try again
+                                </button>
+                            </p>
                         </div>
 
-                        {status === 'error' && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium">
-                                <span className="material-symbols-outlined text-[18px]">error</span>
-                                {message}
+                        <div className="mt-5">
+                            <Link className="flex items-center gap-2 text-[13px] text-text-secondary hover:text-text-primary transition-colors duration-200 font-medium" to="/login">
+                                <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                                Back to log in
+                            </Link>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {/* Request Form */}
+                        <div className="mb-8">
+                            <Link to="/" className="hover:opacity-80 transition-opacity">
+                                <span className="text-[15px] font-medium text-text-primary tracking-tighter lowercase font-mono">knot.ly</span>
+                            </Link>
+                        </div>
+
+                        <div className="text-center mb-6">
+                            <h1 className="text-[24px] font-semibold text-text-primary leading-[1.1] tracking-[-0.03em] mb-2 font-headline">Forgot your password?</h1>
+                            <p className="text-[13px] text-text-secondary leading-relaxed max-w-[300px] mx-auto">
+                                Enter your email and we'll send you a reset link.
+                            </p>
+                        </div>
+
+                        <form className="w-full space-y-3" onSubmit={handleSubmit}>
+                            <div className="w-full">
+                                <input
+                                    className="w-full bg-surface border border-border rounded-[6px] px-[14px] py-[10px] text-[14px] text-text-primary placeholder-text-disabled focus:ring-0 focus:border-accent transition-colors font-mono focus:outline-none"
+                                    placeholder="name@company.com"
+                                    required
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
                             </div>
-                        )}
 
-                        <button
-                            className="mt-2 flex w-full cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-[#d14e0f] text-white font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-                            type="submit"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            ) : (
-                                'Send Reset Link'
+                            {status === 'error' && (
+                                <div className="flex items-center gap-2 p-3 rounded-[6px] bg-danger-soft border border-danger/30 text-danger text-xs font-medium text-left">
+                                    <span className="material-symbols-outlined text-[18px]">error</span>
+                                    {message}
+                                </div>
                             )}
-                        </button>
 
-                        <Link to="/login" className="text-center text-sm text-primary hover:text-primary-dark font-medium mt-2">
-                            I remember my password
-                        </Link>
-                    </form>
+                            <button
+                                className="flex items-center justify-center w-full h-[38px] bg-text-primary hover:bg-white text-bg font-medium text-[14px] rounded-[6px] transition-colors disabled:opacity-50"
+                                type="submit"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <span className="size-4 border-2 border-bg/30 border-t-bg rounded-full animate-spin"></span>
+                                ) : (
+                                    'Send reset link'
+                                )}
+                            </button>
+                        </form>
+
+                        <div className="mt-5 text-center">
+                            <Link className="group flex items-center justify-center gap-1.5 text-[13px] text-text-secondary hover:text-accent transition-colors" to="/login">
+                                <span className="text-[12px] group-hover:-translate-x-0.5 transition-transform">←</span>
+                                Back to log in
+                            </Link>
+                        </div>
+                    </>
                 )}
             </div>
-
-            <p className="mt-8 text-slate-400 dark:text-[#54433b] text-xs">
-                © {new Date().getFullYear()} Knot.ly URL Shortener.
-            </p>
         </div>
     );
 };

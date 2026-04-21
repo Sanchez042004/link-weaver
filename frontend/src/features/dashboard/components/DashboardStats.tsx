@@ -12,13 +12,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ urls, isLoading 
         return (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="flex flex-col gap-2 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm">
+                    <div key={i} className="flex flex-col gap-2 rounded-xl p-6 bg-surface border border-border-primary">
                         <div className="flex items-center justify-between">
-                            <Skeleton className="h-4 w-24 bg-slate-700/50" />
-                            <Skeleton className="size-10 rounded-lg bg-slate-700/50" />
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="size-10 rounded-lg" />
                         </div>
                         <div className="mt-2">
-                            <Skeleton className="h-8 w-16 bg-slate-700/50" />
+                            <Skeleton className="h-8 w-16" />
                         </div>
                     </div>
                 ))}

@@ -8,8 +8,6 @@ import { startKeepAlive } from '@/utils/keepAlive';
 
 async function startServer() {
     try {
-        Logger.info('Iniciando Link Weaver Backend');
-
         /**
          * 1. Conectar a PostgreSQL
          */
@@ -26,10 +24,10 @@ async function startServer() {
         const PORT = env.PORT || 3001;
         const server = app.listen(PORT, '0.0.0.0', () => {
             Logger.info('=============================================');
-            Logger.info(`🚀 SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
+            Logger.info(`SERVIDOR ESCUCHANDO EN: 0.0.0.0:${PORT}`);
             Logger.info(`Entorno: ${env.NODE_ENV}`);
-            Logger.info(`🔗 API Root: http://localhost:${PORT}/`);
-            Logger.info(`💓 Health:   http://localhost:${PORT}/health`);
+            Logger.info(`API Root: http://localhost:${PORT}/`);
+            Logger.info(`Health:   http://localhost:${PORT}/health`);
             Logger.info('=============================================');
 
             // Keep-alive: evita que Koyeb pause el servidor por inactividad

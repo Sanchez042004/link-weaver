@@ -18,40 +18,15 @@ export const app: Application = express();
 
 /**
  * ============================================
- * MIDDLEWARES GLOBALES
+ * MIDDLEWARES GLOBALES Y SEGURIDAD
  * ============================================
  */
 
 app.use(helmet());
-
-// Configuración de Proxy (Crítico para PaaS como Back4App)
-if (env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1); // Confiar en el primer proxy (el de Back4App)
-}
-
-// Ruta de bienvenida
-app.get('/', (_req, res) => {
-    res.status(200).json({
-        message: 'Bienvenido a la API de Link Weaver',
-        version: '1.0.0',
-        status: 'online'
-    });
-});
-
-// Health check para monitoreo de despliegue
-app.get('/health', (_req, res) => {
-    res.status(200).json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        service: 'link-weaver-backend'
-    });
-});
-
 app.use(
     cors({
         origin: (origin, callback) => {
             const allowedOrigin = env.FRONTEND_URL.replace(/\/$/, '');
-            // Permitir si no hay origin (mismo servidor), coincide exacto, o coincide sin barra final
             if (!origin || origin.replace(/\/$/, '') === allowedOrigin) {
                 callback(null, true);
             } else {
@@ -64,8 +39,36 @@ app.use(
     })
 );
 
-app.use(express.json({ limit: '10mb' })); // Límite de 10MB para JSON
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Configuración de Proxy (Crítico para PaaS como Back4App)
+if (env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
+
+// Body Parsers con límites de seguridad
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+/**
+ * ============================================
+ * RUTAS BASE Y MONITOREO
+ * ============================================
+ */
+
+app.get('/', (_req, res) => {
+    res.status(200).json({
+        message: 'Bienvenido a la API de Link Weaver',
+        version: '1.0.0',
+        status: 'online'
+    });
+});
+
+app.get('/health', (_req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: 'link-weaver-backend'
+    });
+});
 
 /**
  * ============================================

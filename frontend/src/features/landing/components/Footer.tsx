@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
                     </div>
                 </div>
                 <div className="mt-8 text-center text-sm text-[#9ca3af]">
-                    © {new Date().getFullYear()} Knot.ly URL Shortener. Made with ❤️ by Andrés
+                    © {new Date().getFullYear()} Knot.ly URL Shortener. Made with passion by Andrés
                 </div>
             </div>
         </footer>

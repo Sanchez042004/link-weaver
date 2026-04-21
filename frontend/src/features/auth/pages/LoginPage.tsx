@@ -31,7 +31,6 @@ const LoginPage: React.FC = () => {
 
     const handleGoogleLogin = () => {
         // TODO: Implement Google OAuth flow
-        console.log('Google login clicked');
     };
 
     return (

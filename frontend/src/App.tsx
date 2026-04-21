@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { BackendStatusProvider } from './context/BackendStatusContext';
-import { ServerWakeUpNotification } from './components/ui/ServerWakeUpNotification';
 
 import DashboardPage from './pages/DashboardPage';
+import LinksPage from './pages/LinksPage';
 import LinkDetailsPage from './pages/LinkDetailsPage';
 import FeaturesPage from './pages/FeaturesPage';
 import LandingPage from './pages/LandingPage';
@@ -23,7 +23,6 @@ function App() {
   return (
     <AuthProvider>
       <BackendStatusProvider>
-        <ServerWakeUpNotification />
         <Routes>
           <Route path="/" element={
             <PublicRoute>
@@ -57,6 +56,11 @@ function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/links" element={
+            <ProtectedRoute>
+              <LinksPage />
             </ProtectedRoute>
           } />
           <Route path="/analytics/:alias" element={

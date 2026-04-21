@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Logo from '../components/Logo';
 
 const VerifyEmailPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -37,53 +36,46 @@ const VerifyEmailPage: React.FC = () => {
     }, [token, verifyEmail]);
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background-light dark:bg-background-dark page-transition">
-            <div className="mb-12">
-                <Link to="/">
-                    <Logo />
-                </Link>
-            </div>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-bg page-transition">
+            <div className="w-full max-w-[380px] flex flex-col items-center text-center">
+                {/* Logo */}
+                <div className="mb-8">
+                    <Link to="/" className="hover:opacity-80 transition-opacity">
+                        <span className="text-[15px] font-medium text-text-primary tracking-tighter lowercase font-mono">knot.ly</span>
+                    </Link>
+                </div>
 
-            <div className="max-w-md w-full bg-white dark:bg-[#2c201a] rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-[#3f322c] text-center">
-                <div className="mb-6 flex justify-center">
+                <div className="mb-6 flex items-center justify-center">
                     {status === 'loading' && (
-                        <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                        <span className="size-8 border-2 border-border border-t-text-primary rounded-full animate-spin"></span>
                     )}
                     {status === 'success' && (
-                        <div className="size-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl">check_circle</span>
-                        </div>
+                        <span className="material-symbols-outlined text-[32px] text-accent">check_circle</span>
                     )}
                     {status === 'error' && (
-                        <div className="size-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl">error</span>
-                        </div>
+                        <span className="material-symbols-outlined text-[32px] text-danger">error</span>
                     )}
                 </div>
 
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                <h1 className="text-[24px] font-semibold text-text-primary mb-2 font-headline tracking-[-0.03em] leading-[1.1]">
                     {status === 'loading' && 'Verifying Email'}
                     {status === 'success' && 'Email Verified!'}
                     {status === 'error' && 'Verification Failed'}
                 </h1>
 
-                <p className="text-slate-600 dark:text-[#b9a69d] mb-8">
+                <p className="text-[13px] leading-relaxed text-text-secondary mb-10 max-w-[320px]">
                     {message}
                 </p>
 
                 {status !== 'loading' && (
                     <Link
                         to="/login"
-                        className="inline-flex w-full items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-[#d14e0f] text-white font-bold transition-all shadow-lg shadow-primary/20"
+                        className="flex items-center justify-center w-full h-[38px] bg-text-primary text-bg font-medium text-[14px] rounded-[6px] hover:bg-white transition-colors duration-200"
                     >
-                        Go to Login
+                        Go to login
                     </Link>
                 )}
             </div>
-
-            <p className="mt-8 text-slate-400 dark:text-[#54433b] text-xs">
-                © {new Date().getFullYear()} Knot.ly URL Shortener.
-            </p>
         </div>
     );
 };

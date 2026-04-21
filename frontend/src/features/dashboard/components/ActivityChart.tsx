@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Skeleton from '../../../components/ui/Skeleton';
 
 interface ActivityChartProps {
@@ -8,18 +8,15 @@ interface ActivityChartProps {
 }
 
 const ChartSkeleton: React.FC = () => (
-    <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 flex flex-col h-full min-h-[300px] overflow-hidden shadow-2xl">
+    <div className="bg-surface border border-border-primary rounded-xl p-6 flex flex-col h-[300px] overflow-hidden">
         <div className="flex items-center justify-between mb-4">
             <Skeleton width={180} height={24} />
         </div>
         <div className="flex-1 w-full flex flex-col gap-4">
-            <div className="flex-1 relative border-l border-b border-border-dark/20 flex flex-col justify-between py-4 pl-4">
+            <div className="flex-1 relative border-b border-border-primary flex flex-col justify-between py-4 pl-4">
                 {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-full border-t border-border-dark/10 h-0" />
+                    <div key={i} className="w-full border-t border-border-primary h-0 opacity-20" />
                 ))}
-                <div className="absolute inset-0 flex items-end">
-                    <Skeleton width="100%" height="40%" className="opacity-10" />
-                </div>
             </div>
             <div className="flex justify-between px-10">
                 {[1, 2, 3, 4, 5, 6, 7].map(i => (
@@ -30,35 +27,34 @@ const ChartSkeleton: React.FC = () => (
     </div>
 );
 
-const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, title = "Engagement (Last 7 Days)" }) => {
+const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, title = "Traffic Over Time" }) => {
     if (isLoading) return <ChartSkeleton />;
 
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
-    // Responsive Chart Dimensions
-    // Mobile: 400x280 (High readability)
-    // Desktop: 900x350 (Compact & Clean - "Like before")
-    const [dimensions, setDimensions] = useState({ width: 900, height: 350 });
+    // Dynamic Chart Dimensions based on container
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-    React.useEffect(() => {
-        const updateDimensions = () => {
-            const isMobile = window.innerWidth < 640;
-            setDimensions({
-                width: isMobile ? 400 : 900,
-                height: isMobile ? 280 : 350
-            });
-        };
+    useEffect(() => {
+        if (!containerRef.current) return;
 
-        updateDimensions();
-        window.addEventListener('resize', updateDimensions);
-        return () => window.removeEventListener('resize', updateDimensions);
+        const observer = new ResizeObserver((entries) => {
+            if (entries[0]) {
+                const { width, height } = entries[0].contentRect;
+                setDimensions({ width, height });
+            }
+        });
+
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
     }, []);
 
     const { width, height } = dimensions;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
-    const chartWidth = width - margin.left - margin.right;
-    const chartHeight = height - margin.top - margin.bottom;
+    const margin = { top: 20, right: 20, bottom: 20, left: 40 };
+    const chartWidth = Math.max(0, width - margin.left - margin.right);
+    const chartHeight = Math.max(0, height - margin.top - margin.bottom);
 
     // Process data
     const getChartData = () => {
@@ -72,10 +68,10 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
         const yAxisLabels = [0, yMax / 4, yMax / 2, (yMax * 3) / 4, yMax].map(v => Math.round(v));
 
         const points = sortedDates.map((date, index) => {
-            const d = new Date(date);
+            const d = new Date(date + 'T00:00:00'); // Ensure local tz parsing isn't off
             return {
                 x: margin.left + (index / Math.max(sortedDates.length - 1, 1)) * chartWidth,
-                y: margin.top + (chartHeight - (timeline[date] / yMax) * chartHeight),
+                y: margin.top + (chartHeight - (timeline[date] / (yMax || 1)) * chartHeight),
                 clicks: timeline[date],
                 dateRaw: date,
                 label: `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' }).replace('.', '')}`
@@ -85,13 +81,13 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
         return { points, yAxisLabels, yMax };
     };
 
-    const { points, yAxisLabels, yMax } = getChartData();
+    const { points, yAxisLabels, yMax } = width > 0 ? getChartData() : { points: [], yAxisLabels: [], yMax: 4 };
 
     const onMouseMove = (e: React.MouseEvent) => {
         if (!svgRef.current || points.length === 0) return;
 
         const rect = svgRef.current.getBoundingClientRect();
-        const mouseX = ((e.clientX - rect.left) / rect.width) * width;
+        const mouseX = e.clientX - rect.left;
 
         let nearestIndex = 0;
         let minDistance = Math.abs(mouseX - points[0].x);
@@ -109,7 +105,8 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
 
     // Simple smooth path
     const getSmoothPath = (pts: { x: number, y: number }[]) => {
-        if (pts.length < 2) return '';
+        if (pts.length === 0) return '';
+        if (pts.length === 1) return `M ${margin.left},${pts[0].y} L ${margin.left + chartWidth},${pts[0].y}`;
 
         return pts.reduce((acc, point, i, a) => {
             if (i === 0) return `M ${point.x},${point.y}`;
@@ -123,40 +120,44 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
     };
 
     const pathData = points.length > 0 ? getSmoothPath(points) : '';
-    const areaData = points.length > 1
-        ? `${pathData} L ${points[points.length - 1].x},${margin.top + chartHeight} L ${points[0].x},${margin.top + chartHeight} Z`
-        : '';
+    
+    // Area uses the same path but closes it down to the bottom
+    let areaData = '';
+    if (points.length === 1) {
+        areaData = `${pathData} L ${margin.left + chartWidth},${margin.top + chartHeight} L ${margin.left},${margin.top + chartHeight} Z`;
+    } else if (points.length > 1) {
+        areaData = `${pathData} L ${points[points.length - 1].x},${margin.top + chartHeight} L ${points[0].x},${margin.top + chartHeight} Z`;
+    }
 
     return (
-        <div className="bg-surface-dark border border-border-dark/60 rounded-2xl p-6 flex flex-col w-full shadow-2xl relative">
-            <div className="mb-4">
-                <h3 className="text-white text-lg font-bold font-display flex items-center gap-2">
+        <div className="bg-surface border border-border-primary rounded-xl p-6 mb-8 flex flex-col w-full h-[340px]">
+            <div className="flex justify-between items-center mb-6">
+                <span className="text-[11px] uppercase tracking-[0.06em] text-text-muted font-semibold flex items-center">
                     {title}
-                    <div className="group/tooltip relative flex items-center">
-                        <span className="material-symbols-outlined text-[16px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[180px] py-1 px-2 bg-slate-900 border border-white/10 text-white text-[10px] rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
-                            <div className="relative z-10">Historical trend of clicks over the selected time period</div>
-                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-white/10"></div>
+                    <div className="group/tooltip relative flex items-center ml-1">
+                        <span className="material-symbols-outlined text-[13px] opacity-40 cursor-help hover:opacity-100 transition-opacity">info</span>
+                        <div className="absolute top-full left-[10px] mt-2 w-max max-w-[180px] py-1 px-2 bg-surface border border-border-primary text-text-primary text-[10px] rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 shadow-xl pointer-events-none normal-case font-normal font-body text-center">
+                            Historical trend of clicks over the selected time period
                         </div>
                     </div>
-                </h3>
+                </span>
             </div>
 
-            <div className="flex-1 w-full relative min-h-0">
-                {points.length > 0 ? (
-                    <div className="w-full h-full">
+            <div className="flex-1 w-full relative min-h-0" ref={containerRef}>
+                {points.length > 0 && width > 0 ? (
+                    <div className="w-full h-full absolute inset-0 text-text-primary">
                         <svg
                             ref={svgRef}
-                            className="w-full h-full"
+                            className="w-full h-full overflow-visible"
                             viewBox={`0 0 ${width} ${height}`}
-                            preserveAspectRatio="xMidYMid meet"
+                            preserveAspectRatio="none"
                             onMouseMove={onMouseMove}
                             onMouseLeave={() => setHoveredIndex(null)}
                         >
                             <defs>
                                 <linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-                                    <stop offset="0%" style={{ stopColor: '#ec5b13', stopOpacity: 0.3 }} />
-                                    <stop offset="100%" style={{ stopColor: '#ec5b13', stopOpacity: 0.05 }} />
+                                    <stop offset="0%" stopColor="#5e6ad2" stopOpacity="0.3" />
+                                    <stop offset="100%" stopColor="#5e6ad2" stopOpacity="0" />
                                 </linearGradient>
                             </defs>
 
@@ -164,12 +165,12 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
                             {yAxisLabels.map((label, i) => {
                                 const yPos = margin.top + chartHeight - (label / (yMax || 1)) * chartHeight;
                                 return (
-                                    <g key={i}>
+                                    <g key={`grid-${i}`}>
                                         <text
                                             x={margin.left - 10}
                                             y={yPos + 4}
-                                            fill="#94a3b8"
-                                            fontSize="11"
+                                            fill="#8a8a8a"
+                                            fontSize="10"
                                             textAnchor="end"
                                             className="font-mono"
                                         >
@@ -180,10 +181,8 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
                                             x2={width - margin.right}
                                             y1={yPos}
                                             y2={yPos}
-                                            stroke="#334155"
+                                            stroke="#1e1e1e"
                                             strokeWidth="1"
-                                            strokeDasharray="2 4"
-                                            opacity="0.2"
                                         />
                                     </g>
                                 );
@@ -196,65 +195,84 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ timeline, isLoading, titl
                             <path
                                 d={pathData}
                                 fill="none"
-                                stroke="#ec5b13"
-                                strokeWidth="2.5"
+                                stroke="#5e6ad2"
+                                strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
 
                             {/* Points */}
-                            {points.map((p, i) => (
+                            {points.length === 1 && (
                                 <circle
-                                    key={i}
+                                    cx={width / 2}
+                                    cy={points[0].y}
+                                    r={5}
+                                    fill="#5e6ad2"
+                                    stroke="#0a0a0a"
+                                    strokeWidth="2"
+                                />
+                            )}
+                            
+                            {points.length > 1 && points.map((p, i) => (
+                                <circle
+                                    key={`point-${i}`}
                                     cx={p.x}
                                     cy={p.y}
-                                    r={hoveredIndex === i ? 6 : 4}
-                                    fill={hoveredIndex === i ? "#ec5b13" : "#221610"}
-                                    stroke="#ec5b13"
-                                    strokeWidth="2"
+                                    r={hoveredIndex === i ? 5 : 3}
+                                    fill="#5e6ad2"
+                                    stroke="#0a0a0a"
+                                    strokeWidth={hoveredIndex === i ? 1 : 1.5}
+                                    className="transition-all duration-200"
+                                    style={{ transformOrigin: `${p.x}px ${p.y}px` }}
                                 />
                             ))}
 
                             {/* Tooltip */}
-                            {hoveredIndex !== null && (
-                                <g transform={`translate(${points[hoveredIndex].x > width - 160 ? points[hoveredIndex].x - 155 : points[hoveredIndex].x + 15}, ${points[hoveredIndex].y - 40})`}>
+                            {hoveredIndex !== null && points.length > 0 && (
+                                <g transform={`translate(${points[hoveredIndex].x > width - 120 ? points[hoveredIndex].x - 110 : points[hoveredIndex].x + 10}, ${Math.max(10, points[hoveredIndex].y - 30)})`}>
                                     <rect
-                                        width="140"
-                                        height="60"
-                                        rx="8"
-                                        fill="#1e293b"
-                                        stroke="#ec5b13"
-                                        strokeWidth="2"
+                                        width="100"
+                                        height="44"
+                                        rx="4"
+                                        fill="#1a1a1a"
+                                        stroke="#282828"
+                                        strokeWidth="1"
                                     />
-                                    <text x="12" y="25" fill="white" fontSize="14" fontWeight="700">
+                                    <text x="8" y="16" fill="#e2e2e2" fontSize="10" className="font-mono">
                                         {points[hoveredIndex].dateRaw}
                                     </text>
-                                    <text x="12" y="45" fill="#ec5b13" fontSize="13">
-                                        Clicks: <tspan fill="white" fontWeight="700">{points[hoveredIndex].clicks}</tspan>
+                                    <text x="8" y="32" fill="#8a8a8a" fontSize="10" className="font-mono">
+                                        Clicks: <tspan fill="#e2e2e2">{points[hoveredIndex].clicks}</tspan>
                                     </text>
                                 </g>
                             )}
                         </svg>
                     </div>
                 ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-3">
-                        <span className="material-symbols-outlined text-[48px] opacity-20">insights</span>
-                        <p className="text-sm font-medium opacity-60">No data available</p>
-                    </div>
+                    width > 0 && (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-text-muted gap-3 border border-border-primary border-dashed rounded-lg bg-surface-hover/20">
+                            <span className="material-symbols-outlined text-[32px] opacity-20">insights</span>
+                            <p className="text-xs font-medium opacity-60">No data available for this range</p>
+                        </div>
+                    )
                 )}
             </div>
 
             {/* X-Axis Labels */}
-            {points.length > 0 && (
-                <div className="flex justify-between mt-4 pt-3 border-t border-border-dark/20" style={{ paddingLeft: `${margin.left}px`, paddingRight: `${margin.right}px` }}>
-                    {points.map((p, i) => (
-                        <span
-                            key={i}
-                            className={`text-xs font-medium transition-colors ${hoveredIndex === i ? 'text-white' : 'text-slate-500'}`}
-                        >
-                            {p.label}
-                        </span>
-                    ))}
+            {points.length > 0 && width > 0 && (
+                <div className="flex justify-between mt-4 text-[10px] text-text-muted font-mono" style={{ paddingLeft: `${margin.left}px`, paddingRight: `${margin.right}px` }}>
+                    {points.length === 1 ? (
+                        <span className="mx-auto text-on-background">{points[0].label}</span>
+                    ) : (
+                        points.map((p, i) => (
+                            <span
+                                key={`label-${i}`}
+                                className={`transition-colors text-center -ml-4 w-8 ${hoveredIndex === i ? 'text-text-primary font-bold' : 'text-text-muted'}`}
+                            >
+                                {p.label}
+                            </span>
+                        ))
+                    )}
                 </div>
             )}
         </div>

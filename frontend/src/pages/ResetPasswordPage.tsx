@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Logo from '../components/Logo';
 
 const ResetPasswordPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -11,7 +10,6 @@ const ResetPasswordPage: React.FC = () => {
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
@@ -56,154 +54,152 @@ const ResetPasswordPage: React.FC = () => {
 
     if (!token) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background-light dark:bg-background-dark">
-                <div className="max-w-md w-full text-center">
-                    <span className="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Invalid Link</h1>
-                    <p className="text-slate-600 dark:text-[#b9a69d] mb-8">This reset link is invalid or has expired.</p>
-                    <Link to="/forgot-password" title="Request a new link" className="text-primary font-bold">Request a new reset link</Link>
+            <div className="min-h-screen flex items-center justify-center p-6 bg-bg">
+                <div className="w-full max-w-[380px] flex flex-col items-center text-center">
+                    <span className="material-symbols-outlined text-[32px] text-danger mb-6">error</span>
+                    <h1 className="text-[24px] font-semibold text-text-primary mb-2 font-headline">Invalid Link</h1>
+                    <p className="text-[13px] text-text-secondary mb-8">This reset link is invalid or has expired.</p>
+                    <Link to="/forgot-password" className="text-accent hover:opacity-80 transition-opacity text-[13px] font-medium">
+                        Request a new reset link
+                    </Link>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background-light dark:bg-background-dark page-transition">
-            <div className="mb-12">
-                <Link to="/">
-                    <Logo />
-                </Link>
-            </div>
-
-            <div className="max-w-md w-full bg-white dark:bg-[#2c201a] rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-[#3f322c]">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 text-center">
-                    Set New Password
-                </h1>
-                <p className="text-slate-600 dark:text-[#b9a69d] text-sm text-center mb-8">
-                    Choose a strong password to protect your account.
-                </p>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-bg page-transition">
+            <div className="w-full max-w-[380px] flex flex-col items-center text-center">
+                {/* Logo */}
+                <div className="mb-8">
+                    <Link to="/" className="hover:opacity-80 transition-opacity">
+                        <span className="text-[15px] font-medium text-text-primary tracking-tighter lowercase font-mono">knot.ly</span>
+                    </Link>
+                </div>
 
                 {status === 'success' ? (
-                    <div className="text-center">
-                        <div className="size-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="material-symbols-outlined text-4xl">check_circle</span>
+                    <>
+                        <div className="mb-6 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[32px] text-accent">check_circle</span>
                         </div>
-                        <p className="text-slate-600 dark:text-[#b9a69d] mb-4 text-sm">
+                        <h1 className="text-[24px] font-semibold tracking-[-0.03em] leading-[1.1] text-text-primary mb-2 font-headline">
+                            Password reset.
+                        </h1>
+                        <p className="text-[13px] leading-relaxed text-text-secondary mb-6 max-w-[320px]">
                             {message}
                         </p>
-                        <p className="text-xs text-slate-400">Redirecting to login...</p>
-                    </div>
+                        <p className="text-[11px] text-text-disabled">Redirecting to login...</p>
+                    </>
                 ) : (
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                        {/* New Password */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-slate-900 dark:text-white text-xs font-medium" htmlFor="password">
-                                New Password
-                            </label>
-                            <div className="relative flex items-center">
+                    <>
+                        <div className="text-center mb-6">
+                            <h1 className="text-[24px] font-semibold text-text-primary leading-[1.1] tracking-[-0.03em] mb-2 font-headline">Set new password</h1>
+                            <p className="text-[13px] text-text-secondary leading-relaxed max-w-[300px] mx-auto">
+                                Choose a strong password to protect your account.
+                            </p>
+                        </div>
+
+                        <form className="w-full space-y-3" onSubmit={handleSubmit}>
+                            {/* New Password */}
+                            <div className="w-full">
                                 <input
-                                    className="form-input w-full rounded-lg border border-slate-300 dark:border-[#3f322c] bg-white dark:bg-[#2c201a] focus:border-primary focus:ring-1 focus:ring-primary h-12 pl-4 pr-12 text-sm placeholder:text-slate-400 dark:placeholder:text-[#b9a69d] dark:text-white transition-colors"
+                                    className="w-full bg-surface border border-border rounded-[6px] px-[14px] py-[10px] text-[14px] text-text-primary placeholder-text-disabled focus:ring-0 focus:border-accent transition-colors focus:outline-none"
                                     id="password"
-                                    placeholder="Enter new password"
-                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="New password"
+                                    type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
-                                <button
-                                    className="absolute right-4 text-slate-400 dark:text-[#b9a69d] hover:text-primary dark:hover:text-primary transition-colors flex items-center justify-center select-none"
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    <span className="material-symbols-outlined text-[20px] select-none">
-                                        {showPassword ? 'visibility' : 'visibility_off'}
-                                    </span>
-                                </button>
+                                {password !== '' && (
+                                    <div className="grid grid-cols-2 gap-y-1.5 mt-2.5 px-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className={`material-symbols-outlined text-[13px] ${isLengthValid ? 'text-accent' : 'text-text-disabled'}`}>
+                                                {isLengthValid ? 'check_circle' : 'circle'}
+                                            </span>
+                                            <span className={`text-[10px] font-medium ${isLengthValid ? 'text-accent' : 'text-text-disabled'}`}>
+                                                Min. 8 characters
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className={`material-symbols-outlined text-[13px] ${hasUppercase ? 'text-accent' : 'text-text-disabled'}`}>
+                                                {hasUppercase ? 'check_circle' : 'circle'}
+                                            </span>
+                                            <span className={`text-[10px] font-medium ${hasUppercase ? 'text-accent' : 'text-text-disabled'}`}>
+                                                One uppercase
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className={`material-symbols-outlined text-[13px] ${hasNumber ? 'text-accent' : 'text-text-disabled'}`}>
+                                                {hasNumber ? 'check_circle' : 'circle'}
+                                            </span>
+                                            <span className={`text-[10px] font-medium ${hasNumber ? 'text-accent' : 'text-text-disabled'}`}>
+                                                One number
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className={`material-symbols-outlined text-[13px] ${hasSpecialChar ? 'text-accent' : 'text-text-disabled'}`}>
+                                                {hasSpecialChar ? 'check_circle' : 'circle'}
+                                            </span>
+                                            <span className={`text-[10px] font-medium ${hasSpecialChar ? 'text-accent' : 'text-text-disabled'}`}>
+                                                One special char
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Restrictions list from SignupPage */}
-                            {password !== '' && (
-                                <div className="grid grid-cols-2 gap-y-1 mt-3 pb-2 border-b border-border-dark/30">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`material-symbols-outlined text-[14px] ${isLengthValid ? 'text-green-500' : 'text-slate-400'}`}>
-                                            {isLengthValid ? 'check_circle' : 'circle'}
-                                        </span>
-                                        <span className={`text-[10px] font-medium ${isLengthValid ? 'text-green-500' : 'text-slate-400'}`}>
-                                            Min. 8 characters
-                                        </span>
+                            {/* Confirm Password */}
+                            <div className="w-full">
+                                <input
+                                    className="w-full bg-surface border border-border rounded-[6px] px-[14px] py-[10px] text-[14px] text-text-primary placeholder-text-disabled focus:ring-0 focus:border-accent transition-colors focus:outline-none"
+                                    id="confirm-password"
+                                    placeholder="Confirm password"
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                                {confirmPassword !== '' && !isMatching && (
+                                    <p className="text-[10px] text-danger mt-1.5 px-1 font-medium text-left">Passwords don't match</p>
+                                )}
+                                {isMatching && (
+                                    <div className="flex items-center gap-1.5 mt-1.5 px-1">
+                                        <span className="material-symbols-outlined text-[13px] text-accent">check_circle</span>
+                                        <span className="text-[10px] font-medium text-accent">Passwords match</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`material-symbols-outlined text-[14px] ${hasUppercase ? 'text-green-500' : 'text-slate-400'}`}>
-                                            {hasUppercase ? 'check_circle' : 'circle'}
-                                        </span>
-                                        <span className={`text-[10px] font-medium ${hasUppercase ? 'text-green-500' : 'text-slate-400'}`}>
-                                            One uppercase
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`material-symbols-outlined text-[14px] ${hasNumber ? 'text-green-500' : 'text-slate-400'}`}>
-                                            {hasNumber ? 'check_circle' : 'circle'}
-                                        </span>
-                                        <span className={`text-[10px] font-medium ${hasNumber ? 'text-green-500' : 'text-slate-400'}`}>
-                                            One number
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`material-symbols-outlined text-[14px] ${hasSpecialChar ? 'text-green-500' : 'text-slate-400'}`}>
-                                            {hasSpecialChar ? 'check_circle' : 'circle'}
-                                        </span>
-                                        <span className={`text-[10px] font-medium ${hasSpecialChar ? 'text-green-500' : 'text-slate-400'}`}>
-                                            One special char
-                                        </span>
-                                    </div>
+                                )}
+                            </div>
+
+                            {status === 'error' && (
+                                <div className="flex items-center gap-2 p-3 rounded-[6px] bg-danger-soft border border-danger/30 text-danger text-xs font-medium text-left">
+                                    <span className="material-symbols-outlined text-[18px]">error</span>
+                                    {message}
                                 </div>
                             )}
+
+                            <button
+                                className="flex items-center justify-center w-full h-[38px] bg-text-primary hover:bg-white text-bg font-medium text-[14px] rounded-[6px] transition-colors disabled:opacity-50"
+                                type="submit"
+                                disabled={isLoading || !isMatching || !isLengthValid}
+                            >
+                                {isLoading ? (
+                                    <span className="size-4 border-2 border-bg/30 border-t-bg rounded-full animate-spin"></span>
+                                ) : (
+                                    'Reset password'
+                                )}
+                            </button>
+                        </form>
+
+                        <div className="mt-5 text-center">
+                            <Link className="group flex items-center justify-center gap-1.5 text-[13px] text-text-secondary hover:text-accent transition-colors" to="/login">
+                                <span className="text-[12px] group-hover:-translate-x-0.5 transition-transform">←</span>
+                                Back to log in
+                            </Link>
                         </div>
-
-                        {/* Confirm Password */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-slate-900 dark:text-white text-xs font-medium" htmlFor="confirm-password">
-                                Confirm Password
-                            </label>
-                            <input
-                                className="form-input w-full rounded-lg border border-slate-300 dark:border-[#3f322c] bg-white dark:bg-[#2c201a] focus:border-primary focus:ring-1 focus:ring-primary h-12 px-4 text-sm placeholder:text-slate-400 dark:placeholder:text-[#b9a69d] dark:text-white transition-colors"
-                                id="confirm-password"
-                                placeholder="Repeat password"
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
-                            {confirmPassword !== '' && !isMatching && (
-                                <p className="text-[10px] text-red-500 mt-1 font-medium">Passwords don't match</p>
-                            )}
-                        </div>
-
-                        {status === 'error' && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium">
-                                <span className="material-symbols-outlined text-[18px]">error</span>
-                                {message}
-                            </div>
-                        )}
-
-                        <button
-                            className="mt-2 flex w-full cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-[#d14e0f] text-white font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-                            type="submit"
-                            disabled={isLoading || !isMatching || !isLengthValid}
-                        >
-                            {isLoading ? (
-                                <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            ) : (
-                                'Reset Password'
-                            )}
-                        </button>
-                    </form>
+                    </>
                 )}
             </div>
-
-            <p className="mt-8 text-slate-400 dark:text-[#54433b] text-xs">
-                © {new Date().getFullYear()} Knot.ly URL Shortener.
-            </p>
         </div>
     );
 };
