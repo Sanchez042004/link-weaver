@@ -15,8 +15,8 @@ const Hero: React.FC = () => {
                 </h1>
 
                 {/* Subheadline */}
-                <p className="text-base text-text-secondary max-w-[480px] mb-12 leading-relaxed">
-                    Advanced link management built for speed and precision. Track, analyze, and optimize every click without the bloat.
+                <p className="text-base text-text-secondary max-w-[520px] mb-12 leading-relaxed">
+                    <strong>Knot.ly</strong> provides high-speed URL shortening and precision analytics. Track, analyze, and optimize every click with ease.
                 </p>
 
                 {/* Product Widget */}
@@ -31,7 +31,7 @@ const Hero: React.FC = () => {
                             <span className="text-[13px] font-mono">GitHub</span>
                         </a>
                         <a href="https://www.linkedin.com/in/andres-sanchez04/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-[#e2e2e2] opacity-70 hover:opacity-100 hover:text-[#5e6ad2] transition-all duration-300">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
                             <span className="text-[13px] font-mono">LinkedIn</span>
                         </a>
                         <a href="https://asanchez-cv.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-[#e2e2e2] opacity-70 hover:opacity-100 hover:text-[#5e6ad2] transition-all duration-300">
