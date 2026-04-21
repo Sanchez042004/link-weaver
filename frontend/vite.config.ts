@@ -13,13 +13,26 @@ export default defineConfig({
         return html.replace(/{{YEAR}}/g, new Date().getFullYear().toString())
       },
       closeBundle() {
-        const sitemapPath = path.resolve(__dirname, 'dist/sitemap.xml');
-        if (fs.existsSync(sitemapPath)) {
-          let sitemap = fs.readFileSync(sitemapPath, 'utf-8');
-          const today = new Date().toISOString().split('T')[0];
-          sitemap = sitemap.replace(/{{DATE}}/g, today);
-          fs.writeFileSync(sitemapPath, sitemap);
+        const today = new Date().toISOString().split('T')[0];
+        const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://knot-ly.vercel.app/</loc>
+    <lastmod>${today}</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://knot-ly.vercel.app/features</loc>
+    <lastmod>${today}</lastmod>
+    <priority>0.8</priority>
+  </url>
+</urlset>`;
+        
+        const distPath = path.resolve(__dirname, 'dist');
+        if (!fs.existsSync(distPath)) {
+          fs.mkdirSync(distPath, { recursive: true });
         }
+        fs.writeFileSync(path.join(distPath, 'sitemap.xml'), sitemapContent);
       }
     }
   ],
