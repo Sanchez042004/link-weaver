@@ -69,7 +69,7 @@ const ForgotPasswordPage: React.FC = () => {
                     <>
                         {/* Request Form */}
                         <div className="mb-8">
-                            <Link to="/" className="hover:opacity-80 transition-opacity">
+                            <Link to="/" className="transition-opacity">
                                 <img src="/logo.png" alt="Knotly" className="h-[44px] w-auto mx-auto" />
                             </Link>
                         </div>
