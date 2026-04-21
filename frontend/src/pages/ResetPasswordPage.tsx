@@ -73,7 +73,7 @@ const ResetPasswordPage: React.FC = () => {
                 {/* Logo */}
                 <div className="mb-8">
                     <Link to="/" className="hover:opacity-80 transition-opacity">
-                        <span className="text-[15px] font-medium text-text-primary tracking-tighter lowercase font-mono">knot.ly</span>
+                        <img src="/logo.png" alt="Knotly" className="h-[44px] w-auto mx-auto" />
                     </Link>
                 </div>
 
