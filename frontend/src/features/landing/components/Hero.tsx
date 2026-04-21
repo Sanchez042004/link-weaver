@@ -3,7 +3,8 @@ import ShortenerForm from './ShortenerForm';
 
 const Hero: React.FC = () => {
     return (
-        <main className="flex-grow pt-16 md:pt-24 pb-4 md:pb-8 px-6 relative overflow-hidden flex flex-col items-center justify-center">
+        <main className="flex-grow flex items-center justify-center h-full p-4 md:p-6 overflow-hidden">
+
             {/* Subtle Background Glow has been removed per user request */}
 
             <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col items-center text-center">

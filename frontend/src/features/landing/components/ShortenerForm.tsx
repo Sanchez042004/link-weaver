@@ -47,10 +47,10 @@ const ShortenerForm: React.FC = () => {
                         <label className="text-[10px] md:text-[11px] font-headline font-semibold uppercase tracking-widest text-[#8a8a8a]">Destination</label>
                         <div className="relative group">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] text-[18px]">link</span>
-                            <input 
-                                className="w-full bg-[#0e0e0e] text-[#e2e2e2] border border-border-secondary focus:border-accent focus:ring-1 focus:ring-accent pl-10 pr-4 h-11 rounded-lg text-[14px] font-mono transition-colors placeholder:text-outline-variant" 
-                                placeholder="https://long-url.com/something-complex" 
-                                required 
+                            <input
+                                className="w-full bg-[#0e0e0e] text-[#e2e2e2] border border-border-secondary focus:border-accent focus:ring-1 focus:ring-accent pl-10 pr-4 h-11 rounded-lg text-[14px] font-mono transition-colors placeholder:text-outline-variant"
+                                placeholder="https://long-url.com/something-complex"
+                                required
                                 type="url"
                                 value={longUrl}
                                 onChange={(e) => setLongUrl(e.target.value)}
@@ -64,9 +64,9 @@ const ShortenerForm: React.FC = () => {
                             <div className="bg-[#1c1b1b] px-3 flex items-center border-r border-border-secondary text-[#8a8a8a] text-sm font-mono whitespace-nowrap pt-1">
                                 {env.getShortUrlBaseDisplay()}/
                             </div>
-                            <input 
-                                className="w-full bg-transparent text-[#e2e2e2] border-none focus:ring-0 px-3 h-11 text-[14px] font-mono placeholder:text-outline-variant" 
-                                placeholder="custom" 
+                            <input
+                                className="w-full bg-transparent text-[#e2e2e2] border-none focus:ring-0 px-3 h-11 text-[14px] font-mono placeholder:text-outline-variant"
+                                placeholder="custom"
                                 type="text"
                                 value={alias}
                                 onChange={(e) => setAlias(e.target.value)}
@@ -130,8 +130,8 @@ const ShortenerForm: React.FC = () => {
 
                 {/* Action */}
                 <div className="flex justify-end pt-4 md:pt-5 border-t border-border-primary mt-4 md:mt-6">
-                    <button 
-                        className="bg-accent text-white hover:opacity-90 px-6 py-2 md:py-2.5 rounded-lg text-[13px] font-semibold transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+                    <button
+                        className="bg-accent text-white hover:opacity-90 px-6 py-2 md:py-2.5 rounded-lg text-[13px] font-semibold transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         type="submit"
                         disabled={isLoading}
                     >
