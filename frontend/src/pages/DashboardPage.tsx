@@ -135,7 +135,6 @@ const DashboardPage: React.FC = () => {
                     <RecentLinksTable
                         urls={urls.slice(0, 3)}
                         isLoading={isLoading}
-                        onEdit={handleEdit}
                         onDelete={handleDeleteClick}
                         onAnalytics={(alias) => navigate(`/analytics/${alias}`)}
                         onShowQR={(url) => {

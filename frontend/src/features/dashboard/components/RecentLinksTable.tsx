@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import type { Url } from '../../../api/url.api';
 import Sparkline from './Sparkline';
 import Skeleton from '../../../components/ui/Skeleton';
-import { format } from 'date-fns';
 import { env } from '../../../config/env';
 
 interface RecentLinksTableProps {
     urls: Url[];
     isLoading: boolean;
-    onEdit: (url: Url) => void;
     onDelete: (id: string) => void;
     onAnalytics: (alias: string) => void;
     onShowQR: (url: Url) => void;
@@ -33,7 +31,6 @@ const TableSkeleton: React.FC = () => (
 const RecentLinksTable: React.FC<RecentLinksTableProps> = ({
     urls,
     isLoading,
-    onEdit,
     onDelete,
     onAnalytics,
     onShowQR,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 
 export const usePasswordValidation = (password: string) => {
     const isLengthValid = useMemo(() => password.length >= 8, [password]);
